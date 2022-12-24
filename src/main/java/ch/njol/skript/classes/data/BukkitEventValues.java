@@ -122,6 +122,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -1422,5 +1423,20 @@ public final class BukkitEventValues {
 				return event.getEgg();
 			}
 		}, EventValues.TIME_NOW);
+		// PlayerItemHeldEvent
+		EventValues.registerEventValue(PlayerItemHeldEvent.class, Slot.class, new Getter<Slot, PlayerItemHeldEvent>() {
+			@Override
+			@Nullable
+			public Slot get(PlayerItemHeldEvent event) {
+				return new InventorySlot(event.getPlayer().getInventory(), event.getNewSlot());
+			}
+		}, EventValues.TIME_NOW);
+		EventValues.registerEventValue(PlayerItemHeldEvent.class, Slot.class, new Getter<Slot, PlayerItemHeldEvent>() {
+			@Override
+			@Nullable
+			public Slot get(PlayerItemHeldEvent event) {
+				return new InventorySlot(event.getPlayer().getInventory(), event.getPreviousSlot());
+			}
+		}, EventValues.TIME_PAST);
 	}
 }
