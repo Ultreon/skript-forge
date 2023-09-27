@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.classes.data;
@@ -45,23 +45,23 @@ import ch.njol.skript.util.slot.Slot;
 import ch.njol.skript.util.slot.SlotWithIndex;
 import ch.njol.util.StringUtils;
 import ch.njol.util.coll.CollectionUtils;
-import org.bukkit.Material;
+import com.github.ultreon.portutils.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
+import net.minecraft.server.level.ServerLevel;
+import com.github.ultreon.portutils.BlockInstance;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.command.CommandSender;
+import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.ChestBoat;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
+import net.minecraft.world.level.block.FallingBlock;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Wither;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
 
@@ -194,9 +194,9 @@ public class DefaultComparators {
 		});
 		
 		// Block - ItemType
-		Comparators.registerComparator(Block.class, ItemType.class, new Comparator<Block, ItemType>() {
+		Comparators.registerComparator(BlockInstance.class, ItemType.class, new Comparator<BlockInstance, ItemType>() {
 			@Override
-			public Relation compare(Block b, ItemType it) {
+			public Relation compare(BlockInstance b, ItemType it) {
 				return Comparators.compare(new ItemType(b), it);
 			}
 
@@ -207,9 +207,9 @@ public class DefaultComparators {
 		});
 		
 		// Block - BlockData
-		Comparators.registerComparator(Block.class, BlockData.class, new Comparator<Block, BlockData>() {
+		Comparators.registerComparator(BlockInstance.class, BlockData.class, new Comparator<BlockInstance, BlockData>() {
 			@Override
-			public Relation compare(Block block, BlockData data) {
+			public Relation compare(BlockInstance block, BlockData data) {
 				return Relation.get(block.getBlockData().matches(data));
 			}
 
@@ -256,9 +256,9 @@ public class DefaultComparators {
 		});
 		
 		// Block - Block
-		Comparators.registerComparator(Block.class, Block.class, new Comparator<Block, Block>() {
+		Comparators.registerComparator(BlockInstance.class, BlockInstance.class, new Comparator<BlockInstance, BlockInstance>() {
 			@Override
-			public Relation compare(Block b1, Block b2) {
+			public Relation compare(BlockInstance b1, BlockInstance b2) {
 				return Relation.get(BlockUtils.extractBlock(b1).equals(BlockUtils.extractBlock(b2)));
 			}
 
@@ -349,10 +349,10 @@ public class DefaultComparators {
 	}
 	
 	static {
-		// CommandSender - CommandSender
-		Comparators.registerComparator(CommandSender.class, CommandSender.class, new Comparator<CommandSender, CommandSender>() {
+		// CommandSourceStack - CommandSourceStack
+		Comparators.registerComparator(CommandSourceStack.class, CommandSourceStack.class, new Comparator<CommandSourceStack, CommandSourceStack>() {
 			@Override
-			public Relation compare(CommandSender s1, CommandSender s2) {
+			public Relation compare(CommandSourceStack s1, CommandSourceStack s2) {
 				return Relation.get(s1.equals(s2));
 			}
 
@@ -390,9 +390,9 @@ public class DefaultComparators {
 		});
 		
 		// World - String
-		Comparators.registerComparator(World.class, String.class, new Comparator<World, String>() {
+		Comparators.registerComparator(ServerLevel.class, String.class, new Comparator<ServerLevel, String>() {
 			@Override
-			public Relation compare(World w, String name) {
+			public Relation compare(ServerLevel w, String name) {
 				return Relation.get(w.getName().equalsIgnoreCase(name));
 			}
 
@@ -606,9 +606,9 @@ public class DefaultComparators {
 			}
 		});
 
-		Comparators.registerComparator(Inventory.class, InventoryType.class, new Comparator<Inventory, InventoryType>() {
+		Comparators.registerComparator(AbstractContainerMenu.class, InventoryType.class, new Comparator<AbstractContainerMenu, InventoryType>() {
 			@Override
-			public Relation compare(Inventory inventory, InventoryType inventoryType) {
+			public Relation compare(AbstractContainerMenu inventory, InventoryType inventoryType) {
 				return Relation.get(inventory.getType() == inventoryType);
 			}
 
@@ -619,9 +619,9 @@ public class DefaultComparators {
 		});
 
 		// World - WeatherType
-		Comparators.registerComparator(World.class, WeatherType.class, new Comparator<World, WeatherType>() {
+		Comparators.registerComparator(ServerLevel.class, WeatherType.class, new Comparator<ServerLevel, WeatherType>() {
 			@Override
-			public Relation compare(World world, WeatherType weatherType) {
+			public Relation compare(ServerLevel world, WeatherType weatherType) {
 				return Relation.get(WeatherType.fromWorld(world) == weatherType);
 			}
 

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.localization;
@@ -187,8 +187,8 @@ public class Language {
 		if (addon.getLanguageFileDirectory() == null)
 			return;
 
-		InputStream defaultIs = addon.plugin.getResource(addon.getLanguageFileDirectory() +  "/default.lang");
-		InputStream englishIs = addon.plugin.getResource(addon.getLanguageFileDirectory() + "/english.lang");
+		InputStream defaultIs = addon.modContainer.getResource(addon.getLanguageFileDirectory() +  "/default.lang");
+		InputStream englishIs = addon.modContainer.getResource(addon.getLanguageFileDirectory() + "/english.lang");
 
 		if (defaultIs == null) {
 			if (englishIs == null) {
@@ -205,7 +205,7 @@ public class Language {
 		if (v == null)
 			Skript.warning("Missing version in default.lang");
 
-		langVersion.put(addon.plugin, v == null ? Skript.getVersion() : new Version(v));
+		langVersion.put(addon.modContainer, v == null ? Skript.getVersion() : new Version(v));
 		def.remove("version");
 		defaultLanguage.putAll(def);
 
@@ -246,11 +246,11 @@ public class Language {
 		if (addon.getLanguageFileDirectory() == null)
 			return false;
 		// Backwards addon compatibility
-		if (name.equals("english") && addon.plugin.getResource(addon.getLanguageFileDirectory() + "/default.lang") == null)
+		if (name.equals("english") && addon.modContainer.getResource(addon.getLanguageFileDirectory() + "/default.lang") == null)
 			return true;
 
-		HashMap<String, String> l = load(addon.plugin.getResource(addon.getLanguageFileDirectory() + "/" + name + ".lang"), name, tryUpdate);
-		File file = new File(addon.plugin.getDataFolder(), addon.getLanguageFileDirectory() + File.separator + name + ".lang");
+		HashMap<String, String> l = load(addon.modContainer.getResource(addon.getLanguageFileDirectory() + "/" + name + ".lang"), name, tryUpdate);
+		File file = new File(addon.modContainer.getDataFolder(), addon.getLanguageFileDirectory() + File.separator + name + ".lang");
 		try {
 			if (file.exists())
 				l.putAll(load(new FileInputStream(file), name, tryUpdate));
@@ -264,7 +264,7 @@ public class Language {
 		} else {
 			try {
 				Version v = new Version("" + l.get("version"));
-				Version lv = langVersion.get(addon.plugin);
+				Version lv = langVersion.get(addon.modContainer);
 				assert lv != null; // set in loadDefault()
 				if (v.isSmallerThan(lv))
 					Skript.warning(addon + "'s language file " + name + ".lang is outdated, some messages will be english.");

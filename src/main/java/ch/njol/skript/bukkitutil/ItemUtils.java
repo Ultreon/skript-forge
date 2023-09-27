@@ -1,25 +1,29 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.bukkitutil;
 
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BlockInstance;
+import com.github.ultreon.portutils.Material;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.eclipse.jdt.annotation.Nullable;
@@ -71,18 +75,54 @@ public class ItemUtils {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Gets a block material corresponding to given item material, which might
+	 * be the given material. If no block material is found, null is returned.
+	 * @param type Material.
+	 * @return Block version of material or null.
+	 */
+	@Nullable
+	public static BlockItem asBlock(Item type) {
+		if (type instanceof BlockItem blockItem) {
+			return blockItem;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Gets a block material corresponding to given item material, which might
+	 * be the given material. If no block material is found, null is returned.
+	 * @param type Material.
+	 * @return Block version of material or null.
+	 */
+	public static Block asBlock(Block type) {
+		return type;
+	}
+
 	/**
 	 * Gets an item material corresponding to given block material, which might
 	 * be the given material.
 	 * @param type Material.
 	 * @return Item version of material or null.
 	 */
-	public static Material asItem(Material type) {
+	public static Item asItem(Item type) {
 		// Assume (naively) that all types are valid items
 		return type;
 	}
-	
+
+	/**
+	 * Gets an item material corresponding to given block material, which might
+	 * be the given material.
+	 * @param type Material.
+	 * @return Item version of material or null.
+	 */
+	public static BlockInstance asItem(BlockInstance type) {
+		// Assume (naively) that all types are valid items
+		return type;
+	}
+
 	/**
 	 * Tests whether two item stacks are of the same type, i.e. it ignores the amounts.
 	 *

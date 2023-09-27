@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -29,8 +29,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import net.minecraft.ChatFormatting;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.eclipse.jdt.annotation.Nullable;
@@ -51,7 +52,7 @@ import ch.njol.util.NonNullPair;
 import ch.njol.util.Pair;
 import ch.njol.util.StringUtils;
 import ch.njol.util.coll.CollectionUtils;
-import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatFormatting;
 
 /**
  * Utility class.
@@ -364,7 +365,7 @@ public abstract class Utils {
 	 * @return a completable future for the message of the responding plugin message, if there is one.
 	 * this completable future will complete exceptionally if no players are online.
 	 */
-	public static CompletableFuture<ByteArrayDataInput> sendPluginMessage(Player player, String channel, String... data) {
+	public static CompletableFuture<ByteArrayDataInput> sendPluginMessage(ServerPlayer player, String channel, String... data) {
 		return sendPluginMessage(player, channel, r -> true, data);
 	}
 
@@ -380,7 +381,7 @@ public abstract class Utils {
 	 */
 	public static CompletableFuture<ByteArrayDataInput> sendPluginMessage(String channel,
 			Predicate<ByteArrayDataInput> messageVerifier, String... data) throws IllegalStateException {
-		Player firstPlayer = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+		ServerPlayer firstPlayer = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
 		if (firstPlayer == null)
 			throw new IllegalStateException("There are no players online");
 		return sendPluginMessage(firstPlayer, channel, messageVerifier, data);
@@ -392,7 +393,7 @@ public abstract class Utils {
 	 * Example usage using the "GetServers" bungee plugin message channel via an overload:
 	 * <code>
 	 *     Utils.sendPluginMessage("BungeeCord", r -> "GetServers".equals(r.readUTF()), "GetServers")
-	 *     			.thenAccept(response -> Bukkit.broadcastMessage(response.readUTF()) // comma delimited server broadcast
+	 *     			.thenAccept(response -> Forge.broadcastMessage(response.readUTF()) // comma delimited server broadcast
 	 *     			.exceptionally(ex -> {
 	 *     			 	Skript.warning("Failed to get servers because there are no players online");
 	 *     			 	return null;
@@ -406,7 +407,7 @@ public abstract class Utils {
 	 * @return a completable future for the message of the responding plugin message, if there is one.
 	 * this completable future will complete exceptionally if the player is null.
 	 */
-	public static CompletableFuture<ByteArrayDataInput> sendPluginMessage(Player player, String channel,
+	public static CompletableFuture<ByteArrayDataInput> sendPluginMessage(ServerPlayer player, String channel,
 			Predicate<ByteArrayDataInput> messageVerifier, String... data) {
 		CompletableFuture<ByteArrayDataInput> completableFuture = new CompletableFuture<>();
 
@@ -442,7 +443,7 @@ public abstract class Utils {
 		return completableFuture;
 	}
 	
-	final static ChatColor[] styles = {ChatColor.BOLD, ChatColor.ITALIC, ChatColor.STRIKETHROUGH, ChatColor.UNDERLINE, ChatColor.MAGIC, ChatColor.RESET};
+	final static ChatFormatting[] styles = {ChatFormatting.BOLD, ChatFormatting.ITALIC, ChatFormatting.STRIKETHROUGH, ChatFormatting.UNDERLINE, ChatFormatting.MAGIC, ChatFormatting.RESET};
 	final static Map<String, String> chat = new HashMap<>();
 	final static Map<String, String> englishChat = new HashMap<>();
 	
@@ -454,7 +455,7 @@ public abstract class Utils {
 			public void onLanguageChange() {
 				final boolean english = englishChat.isEmpty();
 				chat.clear();
-				for (final ChatColor style : styles) {
+				for (final ChatFormatting style : styles) {
 					for (final String s : Language.getList("chat styles." + style.name())) {
 						chat.put(s.toLowerCase(Locale.ENGLISH), style.toString());
 						if (english)
@@ -496,9 +497,9 @@ public abstract class Utils {
 				if (f != null)
 					return f;
 				if (HEX_SUPPORTED && tag.startsWith("#")) { // Check for parsing hex colors
-					ChatColor chatColor = parseHexColor(tag);
-					if (chatColor != null)
-						return chatColor.toString();
+					ChatFormatting ChatFormatting = parseHexColor(tag);
+					if (ChatFormatting != null)
+						return ChatFormatting.toString();
 				}
 				return "" + m.group();
 			}
@@ -509,7 +510,7 @@ public abstract class Utils {
 		if (!message.equals(m)) {
 			m = m.replace("\\$", "$").replace("\\\\", "\\");
 		}
-		m = ChatColor.translateAlternateColorCodes('&', "" + m);
+		m = ChatFormatting.translateAlternateColorCodes('&', "" + m);
 		return "" + m;
 	}
 	
@@ -534,9 +535,9 @@ public abstract class Utils {
 				if (f != null)
 					return f;
 				if (HEX_SUPPORTED && tag.startsWith("#")) { // Check for parsing hex colors
-					ChatColor chatColor = parseHexColor(tag);
-					if (chatColor != null)
-						return chatColor.toString();
+					ChatFormatting ChatFormatting = parseHexColor(tag);
+					if (ChatFormatting != null)
+						return ChatFormatting.toString();
 				}
 				return "" + m.group();
 			}
@@ -547,26 +548,26 @@ public abstract class Utils {
 		if (!message.equals(m)) {
 			m = m.replace("\\$", "$").replace("\\\\", "\\");
 		}
-		m = ChatColor.translateAlternateColorCodes('&', "" + m);
+		m = ChatFormatting.translateAlternateColorCodes('&', "" + m);
 		return "" + m;
 	}
 
 	private static final Pattern HEX_PATTERN = Pattern.compile("(?i)#?[0-9a-f]{6}");
 
 	/**
-	 * Tries to get a {@link ChatColor} from the given string.
+	 * Tries to get a {@link ChatFormatting} from the given string.
 	 * @param hex The hex code to parse.
-	 * @return The ChatColor, or null if it couldn't be parsed.
+	 * @return The ChatFormatting, or null if it couldn't be parsed.
 	 */
 	@SuppressWarnings("null")
 	@Nullable
-	public static ChatColor parseHexColor(String hex) {
+	public static ChatFormatting parseHexColor(String hex) {
 		if (!HEX_SUPPORTED || !HEX_PATTERN.matcher(hex).matches()) // Proper hex code validation
 			return null;
 		
 		hex = hex.replace("#", "");
 		try {
-			return ChatColor.of('#' + hex.substring(0, 6));
+			return ChatFormatting.of('#' + hex.substring(0, 6));
 		} catch (IllegalArgumentException e) {
 			return null;
 		}

@@ -20,7 +20,7 @@ package ch.njol.skript.expressions.base;
 
 import java.util.Iterator;
 
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
@@ -37,20 +37,20 @@ import ch.njol.util.Kleenean;
  * Represents an expression which is a wrapper of another one. Remember to set the wrapped expression in the constructor ({@link #WrapperExpression(SimpleExpression)})
  * or with {@link #setExpr(Expression)} in {@link SyntaxElement#init(Expression[], int, Kleenean, ParseResult) init()}.<br/>
  * If you override {@link #get(Event)} you must override {@link #iterator(Event)} as well.
- * 
+ *
  * @author Peter Güttinger
  */
 public abstract class WrapperExpression<T> extends SimpleExpression<T> {
-	
+
 	private Expression<? extends T> expr;
-	
+
 	@SuppressWarnings("null")
 	protected WrapperExpression() {}
-	
+
 	public WrapperExpression(final SimpleExpression<? extends T> expr) {
 		this.expr = expr;
 	}
-	
+
 	/**
 	 * Sets wrapped expression. Parser instance is automatically copied from
 	 * this expression.
@@ -59,11 +59,11 @@ public abstract class WrapperExpression<T> extends SimpleExpression<T> {
 	protected void setExpr(final Expression<? extends T> expr) {
 		this.expr = expr;
 	}
-	
+
 	public Expression<?> getExpr() {
 		return expr;
 	}
-	
+
 	@Override
 	@Nullable
 	protected <R> ConvertedExpression<T, ? extends R> getConvertedExpr(final Class<R>... to) {
@@ -84,68 +84,68 @@ public abstract class WrapperExpression<T> extends SimpleExpression<T> {
 		}
 		return null;
 	}
-	
+
 	@Override
 	protected T[] get(final Event e) {
 		return expr.getArray(e);
 	}
-	
+
 	@Override
 	@Nullable
 	public Iterator<? extends T> iterator(final Event e) {
 		return expr.iterator(e);
 	}
-	
+
 	@Override
 	public boolean isSingle() {
 		return expr.isSingle();
 	}
-	
+
 	@Override
 	public boolean getAnd() {
 		return expr.getAnd();
 	}
-	
+
 	@Override
 	public Class<? extends T> getReturnType() {
 		return expr.getReturnType();
 	}
-	
+
 	@Override
 	@Nullable
 	public Class<?>[] acceptChange(final ChangeMode mode) {
 		return expr.acceptChange(mode);
 	}
-	
+
 	@Override
 	public void change(final Event e, final @Nullable Object[] delta, final ChangeMode mode) {
 		expr.change(e, delta, mode);
 	}
-	
+
 	@Override
 	public boolean setTime(final int time) {
 		return expr.setTime(time);
 	}
-	
+
 	@Override
 	public int getTime() {
 		return expr.getTime();
 	}
-	
+
 	@Override
 	public boolean isDefault() {
 		return expr.isDefault();
 	}
-	
+
 	@Override
 	public Expression<? extends T> simplify() {
 		return expr;
 	}
-	
+
 	@Override
 	@Nullable
 	public Object[] beforeChange(Expression<?> changed, @Nullable Object[] delta) {
 		return expr.beforeChange(changed, delta); // Forward to what we're wrapping
 	}
-	
+
 }

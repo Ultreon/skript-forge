@@ -6,7 +6,7 @@ import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Material;
+import com.github.ultreon.portutils.Material;
 
 import com.google.gson.Gson;
 

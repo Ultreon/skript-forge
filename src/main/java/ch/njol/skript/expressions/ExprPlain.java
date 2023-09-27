@@ -31,7 +31,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 @Name("Plain Item")
@@ -40,21 +40,21 @@ import org.eclipse.jdt.annotation.Nullable;
 		"\tsend \"You are holding a plain diamond!\""})
 @Since("2.6")
 public class ExprPlain extends SimpleExpression<ItemType> {
-	
+
 	@SuppressWarnings("null")
 	private Expression<ItemType> item;
-	
+
 	static {
 		Skript.registerExpression(ExprPlain.class, ItemType.class, ExpressionType.COMBINED, "[a[n]] (plain|unmodified) %itemtype%");
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
 		item = (Expression<ItemType>) exprs[0];
 		return true;
 	}
-	
+
 	@Override
 	@Nullable
 	protected ItemType[] get(Event e) {
@@ -66,20 +66,20 @@ public class ExprPlain extends SimpleExpression<ItemType> {
 		ItemType plain = new ItemType(data);
 		return new ItemType[]{plain};
 	}
-	
+
 	@Override
 	public boolean isSingle() {
 		return true;
 	}
-	
+
 	@Override
 	public Class<? extends ItemType> getReturnType() {
 		return ItemType.class;
 	}
-	
+
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
 		return "plain " + item.toString(e, debug);
 	}
-	
+
 }

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.entity;
@@ -24,32 +24,23 @@ import ch.njol.skript.bukkitutil.EntityUtils;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.classes.Serializer;
-import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.Literal;
-import ch.njol.skript.lang.ParseContext;
-import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.*;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.SyntaxElement;
-import ch.njol.skript.lang.SyntaxElementInfo;
 import ch.njol.skript.lang.util.SimpleLiteral;
-import ch.njol.skript.localization.Adjective;
-import ch.njol.skript.localization.Language;
+import ch.njol.skript.localization.*;
 import ch.njol.skript.localization.Language.LanguageListenerPriority;
-import ch.njol.skript.localization.LanguageChangeListener;
-import ch.njol.skript.localization.Message;
-import ch.njol.skript.localization.Noun;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 import ch.njol.yggdrasil.Fields;
 import ch.njol.yggdrasil.YggdrasilSerializable.YggdrasilExtendedSerializable;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Consumer;
+import com.github.ultreon.portutils.Forge;
+import com.github.ultreon.portutils.Location;
+import com.github.ultreon.portutils.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.io.NotSerializableException;
@@ -59,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
@@ -78,24 +70,24 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 
 	private static final Pattern REGEX_PATTERN = Pattern.compile("[a-zA-Z -]+");
 
-	public static Serializer<EntityData> serializer = new Serializer<EntityData>() {
+	public static Serializer<EntityData> serializer = new Serializer<>() {
 		@Override
 		public Fields serialize(final EntityData o) throws NotSerializableException {
 			final Fields f = o.serialize();
 			f.putObject("codeName", o.info.codeName);
 			return f;
 		}
-		
+
 		@Override
 		public boolean canBeInstantiated() {
 			return false;
 		}
-		
+
 		@Override
 		public void deserialize(final EntityData o, final Fields f) throws StreamCorruptedException {
 			assert false;
 		}
-		
+
 		@Override
 		protected EntityData deserialize(final Fields fields) throws StreamCorruptedException, NotSerializableException {
 			final String codeName = fields.getAndRemoveObject("codeName", String.class);
@@ -115,8 +107,8 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 			}
 			throw new StreamCorruptedException();
 		}
-		
-//		return getInfo((Class<? extends EntityData<?>>) d.getClass()).codeName + ":" + d.serialize();
+
+		//		return getInfo((Class<? extends EntityData<?>>) d.getClass()).codeName + ":" + d.serialize();
 		@SuppressWarnings("null")
 		@Override
 		@Deprecated
@@ -139,7 +131,7 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 				return null;
 			return d;
 		}
-		
+
 		@Override
 		public boolean mustSyncDeserialization() {
 			return false;
@@ -441,11 +433,11 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 	}
 	
 	@SuppressWarnings({"null", "unchecked"})
-	public E[] getAll(final World... worlds) {
+	public E[] getAll(final ServerLevel... worlds) {
 		assert worlds != null && worlds.length > 0 : Arrays.toString(worlds);
 		final List<E> list = new ArrayList<>();
-		for (final World w : worlds) {
-			for (final E e : w.getEntitiesByClass(getType()))
+		for (final ServerLevel w : worlds) {
+			for (final E e : new World(w).getEntitiesByClass(getType()))
 				if (match(e))
 					list.add(e);
 		}
@@ -459,23 +451,23 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 	 * @return All entities of this type in the given worlds
 	 */
 	@SuppressWarnings({"null", "unchecked"})
-	public static <E extends Entity> E[] getAll(final EntityData<?>[] types, final Class<E> type, @Nullable World[] worlds) {
+	public static <E extends Entity> E[] getAll(final EntityData<?>[] types, final Class<E> type, @Nullable ServerLevel[] worlds) {
 		assert types.length > 0;
-		if (type == Player.class) {
+		if (type == ServerPlayer.class) {
 			if (worlds == null)
-				return (E[]) Bukkit.getOnlinePlayers().toArray(new Player[0]);
-			List<Player> list = new ArrayList<>();
-			for (Player p : Bukkit.getOnlinePlayers()) {
-				if (CollectionUtils.contains(worlds, p.getWorld()))
+				return (E[]) Forge.getOnlinePlayers().toArray(new ServerPlayer[0]);
+			List<ServerPlayer> list = new ArrayList<>();
+			for (ServerPlayer p : Forge.getOnlinePlayers()) {
+				if (CollectionUtils.contains(worlds, p.getLevel()))
 					list.add(p);
 			}
-			return (E[]) list.toArray(new Player[list.size()]);
+			return (E[]) list.toArray(new ServerPlayer[list.size()]);
 		}
 		final List<E> list = new ArrayList<>();
 		if (worlds == null)
-			worlds = Bukkit.getWorlds().toArray(new World[0]);
-		for (final World w : worlds) {
-			for (final E e : w.getEntitiesByClass(type)) {
+			worlds = Forge.getLevels().toArray(new ServerLevel[0]);
+		for (final ServerLevel w : worlds) {
+			for (final E e : new World(w).getEntitiesByClass(type)) {
 				for (final EntityData<?> t : types) {
 					if (t.isInstance(e)) {
 						list.add(e);
@@ -488,15 +480,17 @@ public abstract class EntityData<E extends Entity> implements SyntaxElement, Ygg
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <E extends Entity> E[] getAll(final EntityData<?>[] types, final Class<E> type, Chunk[] chunks) {
+	public static <E extends Entity> E[] getAll(final EntityData<?>[] types, final Class<E> type, ChunkAccess[] chunks) {
 		assert types.length > 0;
 		final List<E> list = new ArrayList<>();
-		for (Chunk chunk : chunks) {
-			for (Entity entity : chunk.getEntities()) {
-				for (EntityData<?> t : types) {
-					if (t.isInstance(entity)) {
-						list.add(((E) entity));
-						break;
+		for (ChunkAccess chunk : chunks) {
+			if (chunk.getWorldForge() instanceof ServerLevel level) {
+				for (Entity entity : level.getAllEntities()) {
+					for (EntityData<?> t : types) {
+						if (t.isInstance(entity)) {
+							list.add(((E) entity));
+							break;
+						}
 					}
 				}
 			}

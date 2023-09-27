@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions;
@@ -29,9 +29,9 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerLevel;
+import com.github.ultreon.portutils.BlockInstance;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -66,7 +66,7 @@ public class ResidenceHook extends RegionsPlugin<Residence> {
 	}
 	
 	@Override
-	public boolean canBuild_i(final Player p, final Location l) {
+	public boolean canBuild_i(final ServerPlayer p, final Location l) {
 		final ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(l);
 		if (res == null)
 			return true; // No claim here
@@ -87,7 +87,7 @@ public class ResidenceHook extends RegionsPlugin<Residence> {
 	
 	@Override
 	@Nullable
-	public Region getRegion_i(final World world, final String name) {
+	public Region getRegion_i(final ServerLevel world, final String name) {
 		final ClaimedResidence res = Residence.getInstance().getResidenceManager().getByName(name);
 		if (res == null)
 			return null;
@@ -112,14 +112,14 @@ public class ResidenceHook extends RegionsPlugin<Residence> {
 	public class ResidenceRegion extends Region {
 		
 		private transient ClaimedResidence res;
-		final World world;
+		final ServerLevel world;
 		
 		@SuppressWarnings({"null", "unused"})
 		private ResidenceRegion() {
 			world = null;
 		}
 		
-		public ResidenceRegion(final World w, ClaimedResidence r) {
+		public ResidenceRegion(final ServerLevel w, ClaimedResidence r) {
 			res = r;
 			world = w;
 		}
@@ -172,7 +172,7 @@ public class ResidenceHook extends RegionsPlugin<Residence> {
 
 		@SuppressWarnings("null")
 		@Override
-		public Iterator<Block> getBlocks() {
+		public Iterator<BlockInstance> getBlocks() {
 			return Collections.emptyIterator();
 		}
 

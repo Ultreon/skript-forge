@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript;
@@ -22,54 +22,58 @@ import ch.njol.skript.localization.Language;
 import ch.njol.skript.util.Utils;
 import ch.njol.skript.util.Version;
 import ch.njol.util.coll.iterator.EnumerationIterable;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.minecraftforge.common.util.MavenVersionStringHelper;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.forgespi.language.IModInfo;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for Skript addons. Use {@link Skript#registerAddon(JavaPlugin)} to create a SkriptAddon instance for your plugin.
+ * Utility class for Skript addons. Use {@link Skript#registerAddon(Object)} to create a SkriptAddon instance for your plugin.
  * 
  * @author Peter Güttinger
  */
 public final class SkriptAddon {
 	
-	public final JavaPlugin plugin;
+	public final ModContainer modContainer;
 	public final Version version;
 	private final String name;
-	
+	private final IModInfo modInfo;
+
 	/**
-	 * Package-private constructor. Use {@link Skript#registerAddon(JavaPlugin)} to get a SkriptAddon for your plugin.
+	 * Package-private constructor. Use {@link Skript#registerAddon(Object)} to get a SkriptAddon for your plugin.
 	 * 
-	 * @param p
+	 * @param container
 	 */
-	SkriptAddon(final JavaPlugin p) {
-		plugin = p;
-		name = "" + p.getName();
+	SkriptAddon(final ModContainer container) {
+		modContainer = container;
+		modInfo = container.getModInfo();
+		name = "" + container.getModInfo().getModId();
 		Version v;
+		String version = MavenVersionStringHelper.artifactVersionToString(modInfo.getVersion());
 		try {
-			v = new Version("" + p.getDescription().getVersion());
+			v = new Version("" + version);
 		} catch (final IllegalArgumentException e) {
-			final Matcher m = Pattern.compile("(\\d+)(?:\\.(\\d+)(?:\\.(\\d+))?)?").matcher(p.getDescription().getVersion());
+			final Matcher m = Pattern.compile("(\\d+)(?:\\.(\\d+)(?:\\.(\\d+))?)?").matcher(version);
 			if (!m.find())
-				throw new IllegalArgumentException("The version of the plugin " + p.getName() + " does not contain any numbers: " + p.getDescription().getVersion());
+				throw new IllegalArgumentException("The version of the mod " + modInfo.getDisplayName() + " (" + modInfo.getModId() + ") does not contain any numbers: " + version);
 			v = new Version(Utils.parseInt("" + m.group(1)), m.group(2) == null ? 0 : Utils.parseInt("" + m.group(2)), m.group(3) == null ? 0 : Utils.parseInt("" + m.group(3)));
-			Skript.warning("The plugin " + p.getName() + " uses a non-standard version syntax: '" + p.getDescription().getVersion() + "'. Skript will use " + v + " instead.");
+			Skript.warning("The mod " + modInfo.getDisplayName() + " (" + modInfo.getModId() + ") uses a non-standard version syntax: '" + version + "'. Skript will use " + v + " instead.");
 		}
-		version = v;
+		this.version = v;
 	}
 	
 	@Override
-	public final String toString() {
+	public String toString() {
 		return name;
 	}
 	
@@ -86,9 +90,10 @@ public final class SkriptAddon {
 	 * @throws IOException If some error occurred attempting to read the plugin's jar file.
 	 * @return This SkriptAddon
 	 */
+	@SuppressWarnings({"ConstantValue", "ThrowableNotThrown"})
 	public SkriptAddon loadClasses(String basePackage, String... subPackages) throws IOException {
 		assert subPackages != null;
-		JarFile jar = new JarFile(getFile());
+		JarFile jar = new JarFile(Objects.requireNonNull(getFile()));
 		for (int i = 0; i < subPackages.length; i++)
 			subPackages[i] = subPackages[i].replace('.', '/') + "/";
 		basePackage = basePackage.replace('.', '/') + "/";
@@ -114,7 +119,7 @@ public final class SkriptAddon {
 
 			for (String c : classNames) {
 				try {
-					Class.forName(c, true, plugin.getClass().getClassLoader());
+					Class.forName(c, true, modContainer.getClass().getClassLoader());
 				} catch (ClassNotFoundException ex) {
 					Skript.exception(ex, "Cannot load class " + c + " from " + this);
 				} catch (ExceptionInInitializerError err) {
@@ -124,7 +129,7 @@ public final class SkriptAddon {
 		} finally {
 			try {
 				jar.close();
-			} catch (IOException e) {}
+			} catch (IOException ignored) {}
 		}
 		return this;
 	}
@@ -158,29 +163,17 @@ public final class SkriptAddon {
 	@Nullable
 	private File file = null;
 	
-	/**
-	 * @return The jar file of the plugin. The first invocation of this method uses reflection to invoke the protected method {@link JavaPlugin#getFile()} to get the plugin's jar
-	 *         file. The file is then cached and returned upon subsequent calls to this method to reduce usage of reflection.
-	 */
 	@Nullable
 	public File getFile() {
 		if (file != null)
 			return file;
 		try {
-			final Method getFile = JavaPlugin.class.getDeclaredMethod("getFile");
-			getFile.setAccessible(true);
-			file = (File) getFile.invoke(plugin);
+			file = modContainer.getModInfo().getOwningFile().getFile().getFilePath().toFile();
 			return file;
-		} catch (final NoSuchMethodException e) {
-			Skript.outdatedError(e);
 		} catch (final IllegalArgumentException e) {
 			Skript.outdatedError(e);
-		} catch (final IllegalAccessException e) {
-			assert false;
 		} catch (final SecurityException e) {
 			throw new RuntimeException(e);
-		} catch (final InvocationTargetException e) {
-			throw new RuntimeException(e.getCause());
 		}
 		return null;
 	}

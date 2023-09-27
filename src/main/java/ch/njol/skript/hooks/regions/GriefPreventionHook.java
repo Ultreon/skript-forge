@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions;
@@ -36,9 +36,9 @@ import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerLevel;
+import com.github.ultreon.portutils.BlockInstance;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.Skript;
@@ -124,7 +124,7 @@ public class GriefPreventionHook extends RegionsPlugin<GriefPrevention> {
 	}
 	
 	@Override
-	public boolean canBuild_i(final Player p, final Location l) {
+	public boolean canBuild_i(final ServerPlayer p, final Location l) {
 		return plugin.allowBuild(p, l) == null; // returns reason string if not allowed to build
 	}
 	
@@ -179,7 +179,7 @@ public class GriefPreventionHook extends RegionsPlugin<GriefPrevention> {
 		}
 		
 		@Override
-		public Iterator<Block> getBlocks() {
+		public Iterator<BlockInstance> getBlocks() {
 			final Location lower = claim.getLesserBoundaryCorner(), upper = claim.getGreaterBoundaryCorner();
 			if (lower == null || upper == null || lower.getWorld() == null || upper.getWorld() == null || lower.getWorld() != upper.getWorld())
 				return EmptyIterator.get();
@@ -245,7 +245,7 @@ public class GriefPreventionHook extends RegionsPlugin<GriefPrevention> {
 	
 	@Override
 	@Nullable
-	public Region getRegion_i(final World world, final String name) {
+	public Region getRegion_i(final ServerLevel world, final String name) {
 		try {
 			final Claim c = getClaim(Long.parseLong(name));
 			if (c != null && world.equals(c.getLesserBoundaryCorner().getWorld()))

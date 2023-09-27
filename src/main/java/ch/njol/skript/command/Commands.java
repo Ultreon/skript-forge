@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.command;
@@ -34,14 +34,14 @@ import ch.njol.skript.util.SkriptColor;
 import ch.njol.skript.variables.Variables;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.minecraft.ChatFormatting;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import net.minecraft.commands.CommandSourceStack;
+import org.bukkit.command.ConsoleCommandSourceStack;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.EventHandler;
+import net.minecraftforge.eventbus.api.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -167,7 +167,7 @@ public abstract class Commands {
 	 * @param command full command string without the slash
 	 * @return whether to cancel the event
 	 */
-	static boolean handleCommand(final CommandSender sender, final String command) {
+	static boolean handleCommand(final CommandSourceStack sender, final String command) {
 		final String[] cmd = command.split("\\s+", 2);
 		cmd[0] = cmd[0].toLowerCase(Locale.ENGLISH);
 		if (cmd[0].endsWith("?")) {
@@ -183,16 +183,16 @@ public abstract class Commands {
 //				c.sendHelp(sender);
 //				return true;
 //			}
-			if (SkriptConfig.logPlayerCommands.value() && sender instanceof Player)
-				SkriptLogger.LOGGER.info(sender.getName() + " [" + ((Player) sender).getUniqueId() + "]: /" + command);
+			if (SkriptConfig.logPlayerCommands.value() && sender instanceof ServerPlayer)
+				SkriptLogger.LOGGER.info(sender.getName() + " [" + ((ServerPlayer) sender).getUniqueId() + "]: /" + command);
 			c.execute(sender, "" + cmd[0], cmd.length == 1 ? "" : "" + cmd[1]);
 			return true;
 		}
 		return false;
 	}
 	
-	static boolean handleEffectCommand(final CommandSender sender, String command) {
-		if (!(sender instanceof ConsoleCommandSender || sender.hasPermission("skript.effectcommands") || SkriptConfig.allowOpsToUseEffectCommands.value() && sender.isOp()))
+	static boolean handleEffectCommand(final CommandSourceStack sender, String command) {
+		if (!(sender instanceof ConsoleCommandSourceStack || sender.hasPermission("skript.effectcommands") || SkriptConfig.allowOpsToUseEffectCommands.value() && sender.isOp()))
 			return false;
 		try {
 			command = "" + command.substring(SkriptConfig.effectCommandToken.value().length()).trim();
@@ -211,19 +211,19 @@ public abstract class Commands {
 					log.clear(); // ignore warnings and stuff
 					log.printLog();
 					if (!effectCommand.isCancelled()) {
-						sender.sendMessage(ChatColor.GRAY + "executing '" + SkriptColor.replaceColorChar(command) + "'");
-						if (SkriptConfig.logPlayerCommands.value() && !(sender instanceof ConsoleCommandSender))
+						sender.sendSystemMessage(ChatFormatting.GRAY + "executing '" + SkriptColor.replaceColorChar(command) + "'");
+						if (SkriptConfig.logPlayerCommands.value() && !(sender instanceof ConsoleCommandSourceStack))
 							Skript.info(sender.getName() + " issued effect command: " + SkriptColor.replaceColorChar(command));
 						TriggerItem.walk(effect, effectCommand);
 						Variables.removeLocals(effectCommand);
 					} else {
-						sender.sendMessage(ChatColor.RED + "your effect command '" + SkriptColor.replaceColorChar(command) + "' was cancelled.");
+						sender.sendSystemMessage(ChatFormatting.RED + "your effect command '" + SkriptColor.replaceColorChar(command) + "' was cancelled.");
 					}
 				} else {
 					if (sender == Bukkit.getConsoleSender()) // log as SEVERE instead of INFO like printErrors below
 						SkriptLogger.LOGGER.severe("Error in: " + SkriptColor.replaceColorChar(command));
 					else
-						sender.sendMessage(ChatColor.RED + "Error in: " + ChatColor.GRAY + SkriptColor.replaceColorChar(command));
+						sender.sendSystemMessage(ChatFormatting.RED + "Error in: " + ChatFormatting.GRAY + SkriptColor.replaceColorChar(command));
 					log.printErrors(sender, "(No specific information is available)");
 				}
 			} finally {
@@ -232,7 +232,7 @@ public abstract class Commands {
 			return true;
 		} catch (final Exception e) {
 			Skript.exception(e, "Unexpected error while executing effect command '" + SkriptColor.replaceColorChar(command) + "' by '" + sender.getName() + "'");
-			sender.sendMessage(ChatColor.RED + "An internal error occurred while executing this effect. Please refer to the server log for details.");
+			sender.sendSystemMessage(ChatFormatting.RED + "An internal error occurred while executing this effect. Please refer to the server log for details.");
 			return true;
 		}
 	}
@@ -344,11 +344,11 @@ public abstract class Commands {
 			this.helpMap = helpMap;
 			name = alias.startsWith("/") ? alias : "/" + alias;
 			Validate.isTrue(!name.equals(this.aliasFor), "Command " + name + " cannot be alias for itself");
-			shortText = ChatColor.YELLOW + "Alias for " + ChatColor.WHITE + this.aliasFor;
+			shortText = ChatFormatting.YELLOW + "Alias for " + ChatFormatting.WHITE + this.aliasFor;
 		}
 		
 		@Override
-		public String getFullText(final CommandSender forWho) {
+		public String getFullText(final CommandSourceStack forWho) {
 			final StringBuilder sb = new StringBuilder(shortText);
 			final HelpTopic aliasForTopic = helpMap.getHelpTopic(aliasFor);
 			if (aliasForTopic != null) {
@@ -359,17 +359,17 @@ public abstract class Commands {
 		}
 		
 		@Override
-		public boolean canSee(final CommandSender commandSender) {
+		public boolean canSee(final CommandSourceStack CommandSourceStack) {
 			if (amendedPermission == null) {
 				final HelpTopic aliasForTopic = helpMap.getHelpTopic(aliasFor);
 				if (aliasForTopic != null) {
-					return aliasForTopic.canSee(commandSender);
+					return aliasForTopic.canSee(CommandSourceStack);
 				} else {
 					return false;
 				}
 			} else {
 				assert amendedPermission != null;
-				return commandSender.hasPermission(amendedPermission);
+				return CommandSourceStack.hasPermission(amendedPermission);
 			}
 		}
 	}

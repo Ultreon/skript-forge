@@ -1,25 +1,25 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.chat.expressions;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
@@ -44,7 +44,7 @@ import ch.njol.util.Kleenean;
 		"	broadcast \"%player's prefix%%player's display name%%player's suffix%: %message%\" to the player's world",
 		"set the player's prefix to \"[&lt;red&gt;Admin<reset>] \""})
 @Since("2.0")
-public class ExprPrefixSuffix extends SimplePropertyExpression<Player, String> {
+public class ExprPrefixSuffix extends SimplePropertyExpression<ServerPlayer, String> {
 	static {
 		register(ExprPrefixSuffix.class, String.class, "[chat] (1¦prefix|2¦suffix)", "players");
 	}
@@ -58,7 +58,7 @@ public class ExprPrefixSuffix extends SimplePropertyExpression<Player, String> {
 	}
 	
 	@Override
-	public String convert(final Player p) {
+	public String convert(final ServerPlayer p) {
 		return Utils.replaceChatStyles(prefix ? "" + VaultHook.chat.getPlayerPrefix(p) : "" + VaultHook.chat.getPlayerSuffix(p));
 	}
 	
@@ -84,7 +84,7 @@ public class ExprPrefixSuffix extends SimplePropertyExpression<Player, String> {
 	public void change(final Event e, final @Nullable Object[] delta, final ChangeMode mode) {
 		assert mode == ChangeMode.SET;
 		assert delta != null;
-		for (final Player p : getExpr().getArray(e)) {
+		for (final ServerPlayer p : getExpr().getArray(e)) {
 			if (prefix)
 				VaultHook.chat.setPlayerPrefix(p, (String) delta[0]);
 			else

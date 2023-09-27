@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util.chat;
@@ -38,7 +38,7 @@ import ch.njol.skript.SkriptAddon;
 import ch.njol.skript.localization.Language;
 import ch.njol.skript.localization.LanguageChangeListener;
 import ch.njol.skript.util.Utils;
-import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatFormatting;
 
 /**
  * Handles parsing chat messages.
@@ -231,10 +231,10 @@ public class ChatMessages {
 					name = name.toLowerCase(Locale.ENGLISH); // Tags are case-insensitive
 					
 					boolean tryHex = Utils.HEX_SUPPORTED && name.startsWith("#");
-					ChatColor chatColor = null;
+					ChatFormatting ChatFormatting = null;
 					if (tryHex) {
-						chatColor = Utils.parseHexColor(name);
-						tryHex = chatColor != null;
+						ChatFormatting = Utils.parseHexColor(name);
+						tryHex = ChatFormatting != null;
 					}
 					
 					code = codes.get(name);
@@ -250,9 +250,9 @@ public class ChatMessages {
 						components.add(current);
 						
 						if (tryHex) {
-							current.color = chatColor;
+							current.color = ChatFormatting;
 						} else if (code.getColorCode() != null) { // Just update color code
-							current.color = ChatColor.getByChar(code.getColorChar());
+							current.color = ChatFormatting.getByCode(code.getColorChar());
 						} else {
 							assert param != null;
 							code.updateComponent(current, param); // Call SkriptChatCode update
@@ -279,10 +279,10 @@ public class ChatMessages {
 				char color = chars[i + 1];
 				
 				boolean tryHex = Utils.HEX_SUPPORTED && color == 'x';
-				ChatColor chatColor = null;
+				ChatFormatting ChatFormatting = null;
 				if (tryHex && i + 14 < chars.length) { // Try to parse hex "&x&1&2&3&4&5&6"
-					chatColor = Utils.parseHexColor(msg.substring(i + 2, i + 14).replace("&", "").replace("§", ""));
-					tryHex = chatColor != null;
+					ChatFormatting = Utils.parseHexColor(msg.substring(i + 2, i + 14).replace("&", "").replace("§", ""));
+					tryHex = ChatFormatting != null;
 				}
 				
 				if (color >= colorChars.length) { // Invalid Unicode color character
@@ -303,11 +303,11 @@ public class ChatMessages {
 					
 					components.add(current);
 					
-					if (tryHex) { // Set color to hex ChatColor
-						current.color = chatColor;
+					if (tryHex) { // Set color to hex ChatFormatting
+						current.color = ChatFormatting;
 						i = i + 12; // Skip past all the tags
 					} else if (code.getColorCode() != null) { // Just update color code
-						current.color = ChatColor.getByChar(code.getColorChar());
+						current.color = ChatFormatting.getByCode(code.getColorChar());
 					} else {
 						code.updateComponent(current, param); // Call SkriptChatCode update
 					}
@@ -442,10 +442,10 @@ public class ChatMessages {
 				char color = chars[i + 1];
 
 				boolean tryHex = Utils.HEX_SUPPORTED && color == 'x';
-				ChatColor chatColor = null;
+				ChatFormatting ChatFormatting = null;
 				if (tryHex && i + 14 < chars.length) { // Try to parse hex "&x&1&2&3&4&5&6"
-					chatColor = Utils.parseHexColor(msg.substring(i + 2, i + 14).replace("&", "").replace("§", ""));
-					tryHex = chatColor != null;
+					ChatFormatting = Utils.parseHexColor(msg.substring(i + 2, i + 14).replace("&", "").replace("§", ""));
+					tryHex = ChatFormatting != null;
 				}
 
 				if (color >= colorChars.length) { // Invalid Unicode color character
@@ -465,11 +465,11 @@ public class ChatMessages {
 
 					components.add(current);
 
-					if (tryHex) { // Set color to hex ChatColor
-						current.color = chatColor;
+					if (tryHex) { // Set color to hex ChatFormatting
+						current.color = ChatFormatting;
 						i = i + 12; // Skip past all the tags
 					} else if (code.getColorCode() != null) { // Just update color code
-						current.color = ChatColor.getByChar(code.getColorChar());
+						current.color = ChatFormatting.getByCode(code.getColorChar());
 					} else {
 						code.updateComponent(current, param); // Call SkriptChatCode update
 					}

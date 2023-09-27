@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util.slot;
@@ -21,10 +21,10 @@ package ch.njol.skript.util.slot;
 import java.util.Locale;
 
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.Event;
 import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.bukkitutil.PlayerUtils;
@@ -161,8 +161,8 @@ public class EquipmentSlot extends SlotWithIndex {
 	@Override
 	public void setItem(final @Nullable ItemStack item) {
 		slot.set(e, item);
-		if (e.getHolder() instanceof Player)
-			PlayerUtils.updateInventory((Player) e.getHolder());
+		if (e.getHolder() instanceof ServerPlayer)
+			PlayerUtils.updateInventory((ServerPlayer) e.getHolder());
 	}
 	
 	@Override

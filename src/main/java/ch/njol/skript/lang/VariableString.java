@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.lang;
@@ -28,6 +28,7 @@ import ch.njol.skript.log.BlockingLogHandler;
 import ch.njol.skript.log.RetainingLogHandler;
 import ch.njol.skript.log.SkriptLogger;
 import ch.njol.skript.registrations.Classes;
+import ch.njol.skript.util.ChatFormattingUtil;
 import ch.njol.skript.util.StringMode;
 import ch.njol.skript.util.Utils;
 import ch.njol.skript.util.chat.ChatMessages;
@@ -37,8 +38,8 @@ import ch.njol.util.Kleenean;
 import ch.njol.util.StringUtils;
 import ch.njol.util.coll.CollectionUtils;
 import ch.njol.util.coll.iterator.SingleItemIterator;
-import org.bukkit.ChatColor;
-import org.bukkit.event.Event;
+import net.minecraft.ChatFormatting;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -512,11 +513,11 @@ public class VariableString implements Expression<String> {
 	}
 	
 	@Nullable
-	private static ChatColor getLastColor(CharSequence s) {
+	private static ChatFormatting getLastColor(CharSequence s) {
 		for (int i = s.length() - 2; i >= 0; i--) {
-			if (s.charAt(i) == ChatColor.COLOR_CHAR) {
-				ChatColor c = ChatColor.getByChar(s.charAt(i + 1));
-				if (c != null && (c.isColor() || c == ChatColor.RESET))
+			if (s.charAt(i) == ChatFormattingUtil.COLOR_CHAR) {
+				ChatFormatting c = ChatFormatting.getByCode(s.charAt(i + 1));
+				if (c != null && (c.isColor() || c == ChatFormatting.RESET))
 					return c;
 			}
 		}

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.classes.data;
@@ -55,9 +55,9 @@ import ch.njol.skript.util.slot.Slot;
 import ch.njol.skript.util.visual.VisualEffect;
 import ch.njol.skript.util.visual.VisualEffects;
 import ch.njol.yggdrasil.Fields;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemStack;
+import com.github.ultreon.portutils.Material;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.ItemStack;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.io.StreamCorruptedException;
@@ -534,7 +534,7 @@ public class SkriptClasses {
 
 		Classes.registerClass(new ClassInfo<>(Slot.class, "slot")
 				.user("(inventory )?slots?")
-				.name("Inventory Slot")
+				.name("AbstractContainerMenu Slot")
 				.description("Represents a single slot of an <a href='#inventory'>inventory</a>. " +
 						"Notable slots are the <a href='../expressions.html#ExprArmorSlot'>armour slots</a> and <a href='../expressions/#ExprFurnaceSlot'>furnace slots</a>. ",
 						"The most important property that distinguishes a slot from an <a href='#itemstack'>item</a> is its ability to be changed, e.g. it can be set, deleted, enchanted, etc. " +

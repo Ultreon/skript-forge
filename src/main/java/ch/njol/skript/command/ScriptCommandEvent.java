@@ -1,27 +1,27 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.command;
 
 import ch.njol.skript.effects.Delay;
 import ch.njol.skript.util.Date;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.event.HandlerList;
 
 public class ScriptCommandEvent extends CommandEvent {
@@ -38,7 +38,7 @@ public class ScriptCommandEvent extends CommandEvent {
 	 * @param commandLabel The command name (may be the used alias)
 	 * @param rest The rest of the command string (the arguments)
 	 */
-	public ScriptCommandEvent(ScriptCommand scriptCommand, CommandSender sender, String commandLabel, String rest) {
+	public ScriptCommandEvent(ScriptCommand scriptCommand, CommandSourceStack sender, String commandLabel, String rest) {
 		super(sender, scriptCommand.getLabel(), rest.split(" "));
 		this.scriptCommand = scriptCommand;
 		this.commandLabel = commandLabel;
@@ -76,10 +76,10 @@ public class ScriptCommandEvent extends CommandEvent {
 
 	public void setCooldownCancelled(boolean cooldownCancelled) {
 		if (Delay.isDelayed(this)) {
-			CommandSender sender = getSender();
-			if (sender instanceof Player) {
+			CommandSourceStack sender = getSender();
+			if (sender instanceof ServerPlayer) {
 				Date date = cooldownCancelled ? null : executionDate;
-				scriptCommand.setLastUsage(((Player) sender).getUniqueId(), this, date);
+				scriptCommand.setLastUsage(((ServerPlayer) sender).getUniqueId(), this, date);
 			}
 		} else {
 			this.cooldownCancelled = cooldownCancelled;

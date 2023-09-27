@@ -1,26 +1,26 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions.conditions;
 
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.Skript;
@@ -58,14 +58,14 @@ public class CondCanBuild extends Condition {
 	}
 	
 	@SuppressWarnings("null")
-	private Expression<Player> players;
+	private Expression<ServerPlayer> players;
 	@SuppressWarnings("null")
 	Expression<Location> locations;
 	
 	@SuppressWarnings({"unchecked", "null"})
 	@Override
 	public boolean init(final Expression<?>[] exprs, final int matchedPattern, final Kleenean isDelayed, final ParseResult parseResult) {
-		players = (Expression<Player>) exprs[0];
+		players = (Expression<ServerPlayer>) exprs[0];
 		locations = Direction.combine((Expression<? extends Direction>) exprs[1], (Expression<? extends Location>) exprs[2]);
 		setNegated(matchedPattern == 1);
 		return true;
@@ -73,9 +73,9 @@ public class CondCanBuild extends Condition {
 	
 	@Override
 	public boolean check(final Event e) {
-		return players.check(e, new Checker<Player>() {
+		return players.check(e, new Checker<ServerPlayer>() {
 			@Override
-			public boolean check(final Player p) {
+			public boolean check(final ServerPlayer p) {
 				return locations.check(e, new Checker<Location>() {
 					@Override
 					public boolean check(final Location l) {

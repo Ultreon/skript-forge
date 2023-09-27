@@ -29,7 +29,7 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.Objects;
@@ -69,7 +69,7 @@ public class VisualEffect implements SyntaxElement, YggdrasilSerializable {
 		return true;
 	}
 
-	public void play(@Nullable Player[] ps, Location l, @Nullable Entity e, int count, int radius) {
+	public void play(@Nullable ServerPlayer[] ps, Location l, @Nullable Entity e, int count, int radius) {
 		assert e == null || l.equals(e.getLocation());
 
 		if (type.isEffect()) {
@@ -79,7 +79,7 @@ public class VisualEffect implements SyntaxElement, YggdrasilSerializable {
 			if (ps == null) {
 				l.getWorld().playEffect(l, effect, data, radius);
 			} else {
-				for (Player p : ps)
+				for (ServerPlayer p : ps)
 					p.playEffect(l, effect, data);
 			}
 
@@ -120,7 +120,7 @@ public class VisualEffect implements SyntaxElement, YggdrasilSerializable {
 					l.getWorld().spawnParticle(particle, l, count, dX, dY, dZ, speed, data);
 				}
 			} else {
-				for (Player p : ps) {
+				for (ServerPlayer p : ps) {
 					if (type.isColorable()) {
 						for (int i = 0; i < loopCount; i++) {
 							p.spawnParticle(particle, l, 0, dX, dY, dZ, speed, data);

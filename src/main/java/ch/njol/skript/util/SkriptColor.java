@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.bukkit.ChatColor;
+import net.minecraft.ChatFormatting;
 import org.bukkit.DyeColor;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -42,28 +42,28 @@ import ch.njol.yggdrasil.Fields;
 @SuppressWarnings("null")
 public enum SkriptColor implements Color {
 
-	BLACK(DyeColor.BLACK, ChatColor.BLACK),
-	DARK_GREY(DyeColor.GRAY, ChatColor.DARK_GRAY),
+	BLACK(DyeColor.BLACK, ChatFormatting.BLACK),
+	DARK_GREY(DyeColor.GRAY, ChatFormatting.DARK_GRAY),
 	// DyeColor.LIGHT_GRAY on 1.13, DyeColor.SILVER on earlier (dye colors were changed in 1.12)
-	LIGHT_GREY(DyeColor.LIGHT_GRAY, ChatColor.GRAY),
-	WHITE(DyeColor.WHITE, ChatColor.WHITE),
+	LIGHT_GREY(DyeColor.LIGHT_GRAY, ChatFormatting.GRAY),
+	WHITE(DyeColor.WHITE, ChatFormatting.WHITE),
 	
-	DARK_BLUE(DyeColor.BLUE, ChatColor.DARK_BLUE),
-	BROWN(DyeColor.BROWN, ChatColor.BLUE),
-	DARK_CYAN(DyeColor.CYAN, ChatColor.DARK_AQUA),
-	LIGHT_CYAN(DyeColor.LIGHT_BLUE, ChatColor.AQUA),
+	DARK_BLUE(DyeColor.BLUE, ChatFormatting.DARK_BLUE),
+	BROWN(DyeColor.BROWN, ChatFormatting.BLUE),
+	DARK_CYAN(DyeColor.CYAN, ChatFormatting.DARK_AQUA),
+	LIGHT_CYAN(DyeColor.LIGHT_BLUE, ChatFormatting.AQUA),
 	
-	DARK_GREEN(DyeColor.GREEN, ChatColor.DARK_GREEN),
-	LIGHT_GREEN(DyeColor.LIME, ChatColor.GREEN),
+	DARK_GREEN(DyeColor.GREEN, ChatFormatting.DARK_GREEN),
+	LIGHT_GREEN(DyeColor.LIME, ChatFormatting.GREEN),
 	
-	YELLOW(DyeColor.YELLOW, ChatColor.YELLOW),
-	ORANGE(DyeColor.ORANGE, ChatColor.GOLD),
+	YELLOW(DyeColor.YELLOW, ChatFormatting.YELLOW),
+	ORANGE(DyeColor.ORANGE, ChatFormatting.GOLD),
 	
-	DARK_RED(DyeColor.RED, ChatColor.DARK_RED),
-	LIGHT_RED(DyeColor.PINK, ChatColor.RED),
+	DARK_RED(DyeColor.RED, ChatFormatting.DARK_RED),
+	LIGHT_RED(DyeColor.PINK, ChatFormatting.RED),
 	
-	DARK_PURPLE(DyeColor.PURPLE, ChatColor.DARK_PURPLE),
-	LIGHT_PURPLE(DyeColor.MAGENTA, ChatColor.LIGHT_PURPLE);
+	DARK_PURPLE(DyeColor.PURPLE, ChatFormatting.DARK_PURPLE),
+	LIGHT_PURPLE(DyeColor.MAGENTA, ChatFormatting.LIGHT_PURPLE);
 
 	private final static Map<String, SkriptColor> names = new HashMap<>();
 	private final static Set<SkriptColor> colors = new HashSet<>();
@@ -82,12 +82,12 @@ public enum SkriptColor implements Color {
 		});
 	}
 	
-	private ChatColor chat;
+	private ChatFormatting chat;
 	private DyeColor dye;
 	@Nullable
 	private Adjective adjective;
 	
-	SkriptColor(DyeColor dye, ChatColor chat) {
+	SkriptColor(DyeColor dye, ChatFormatting chat) {
 		this.chat = chat;
 		this.dye = dye;
 	}
@@ -116,7 +116,7 @@ public enum SkriptColor implements Color {
 	@Override
 	public void deserialize(@NonNull Fields fields) throws StreamCorruptedException {
 		dye = fields.getObject("dye", DyeColor.class);
-		chat = fields.getObject("chat", ChatColor.class);
+		chat = fields.getObject("chat", ChatFormatting.class);
 		try {
 			adjective = fields.getObject("adjective", Adjective.class);
 		} catch (StreamCorruptedException ignored) {}
@@ -131,7 +131,7 @@ public enum SkriptColor implements Color {
 		return adjective;
 	}
 	
-	public ChatColor asChatColor() {
+	public ChatFormatting asChatFormatting() {
 		return chat;
 	}
 	
@@ -224,7 +224,7 @@ public enum SkriptColor implements Color {
 
 	/**
 	 * Replace chat color character '§' with '&'
-	 * This is an alternative method to {@link ChatColor#stripColor(String)}
+	 * This is an alternative method to {@link ChatFormatting#stripColor(String)}
 	 * But does not strip the color code.
 	 * @param s string to replace chat color character of.
 	 * @return String with replaced chat color character

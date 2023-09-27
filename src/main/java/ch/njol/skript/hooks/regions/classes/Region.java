@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions.classes;
@@ -31,8 +31,8 @@ import ch.njol.yggdrasil.YggdrasilSerializable.YggdrasilExtendedSerializable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
+import net.minecraft.server.level.ServerLevel;
+import com.github.ultreon.portutils.BlockInstance;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.Collection;
@@ -100,7 +100,7 @@ public abstract class Region implements YggdrasilExtendedSerializable {
 	@Nullable
 	private static Region parse(String s, boolean error) {
 		Region r = null;
-		for (World w : Bukkit.getWorlds()) {
+		for (ServerLevel w : Bukkit.getWorlds()) {
 			Region r2 = RegionsPlugin.getRegion(w, s);
 			if (r2 == null)
 				continue;
@@ -129,7 +129,7 @@ public abstract class Region implements YggdrasilExtendedSerializable {
 	
 	public abstract Collection<OfflinePlayer> getOwners();
 	
-	public abstract Iterator<Block> getBlocks();
+	public abstract Iterator<BlockInstance> getBlocks();
 	
 	@Override
 	public abstract String toString();

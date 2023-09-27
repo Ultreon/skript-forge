@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript;
@@ -37,7 +37,7 @@ import ch.njol.util.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.eclipse.jdt.annotation.Nullable;
@@ -90,7 +90,7 @@ public class SkriptCommand implements CommandExecutor {
 	
 	private static final ArgsMessage m_reloading = new ArgsMessage(CONFIG_NODE + ".reload.reloading");
 	
-	private static void reloading(CommandSender sender, String what, Object... args) {
+	private static void reloading(CommandSourceStack sender, String what, Object... args) {
 		what = args.length == 0 ? Language.get(CONFIG_NODE + ".reload." + what) : Language.format(CONFIG_NODE + ".reload." + what, args);
 		Skript.info(sender, StringUtils.fixCapitalization(m_reloading.toString(what)));
 	}
@@ -98,7 +98,7 @@ public class SkriptCommand implements CommandExecutor {
 	private static final ArgsMessage m_reloaded = new ArgsMessage(CONFIG_NODE + ".reload.reloaded");
 	private static final ArgsMessage m_reload_error = new ArgsMessage(CONFIG_NODE + ".reload.error");
 	
-	private static void reloaded(CommandSender sender, RedirectingLogHandler r, TimingLogHandler timingLogHandler, String what, Object... args) {
+	private static void reloaded(CommandSourceStack sender, RedirectingLogHandler r, TimingLogHandler timingLogHandler, String what, Object... args) {
 		what = args.length == 0 ? Language.get(CONFIG_NODE + ".reload." + what) : PluralizingArgsMessage.format(Language.format(CONFIG_NODE + ".reload." + what, args));
 		String timeTaken  = String.valueOf(timingLogHandler.getTimeTaken());
 
@@ -108,18 +108,18 @@ public class SkriptCommand implements CommandExecutor {
 			Skript.error(sender, StringUtils.fixCapitalization(PluralizingArgsMessage.format(m_reload_error.toString(what, r.numErrors(), timeTaken))));
 	}
 	
-	private static void info(CommandSender sender, String what, Object... args) {
+	private static void info(CommandSourceStack sender, String what, Object... args) {
 		what = args.length == 0 ? Language.get(CONFIG_NODE + "." + what) : PluralizingArgsMessage.format(Language.format(CONFIG_NODE + "." + what, args));
 		Skript.info(sender, StringUtils.fixCapitalization(what));
 	}
 	
-	private static void error(CommandSender sender, String what, Object... args) {
+	private static void error(CommandSourceStack sender, String what, Object... args) {
 		what = args.length == 0 ? Language.get(CONFIG_NODE + "." + what) : PluralizingArgsMessage.format(Language.format(CONFIG_NODE + "." + what, args));
 		Skript.error(sender, StringUtils.fixCapitalization(what));
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	public boolean onCommand(CommandSourceStack sender, Command command, String label, String[] args) {
 		if (!SKRIPT_COMMAND_HELP.test(sender, args))
 			return true;
 
@@ -371,7 +371,7 @@ public class SkriptCommand implements CommandExecutor {
 				Collection<SkriptAddon> addons = Skript.getAddons();
 				info(sender, "info.addons", addons.isEmpty() ? "None" : "");
 				for (SkriptAddon addon : addons) {
-					PluginDescriptionFile desc = addon.plugin.getDescription();
+					PluginDescriptionFile desc = addon.modContainer.getDescription();
 					String web = desc.getWebsite();
 					Skript.info(sender, " - " + desc.getFullName() + (web != null ? " (" + web + ")" : ""));
 				}
@@ -461,7 +461,7 @@ public class SkriptCommand implements CommandExecutor {
 	private static final ArgsMessage m_invalid_folder = new ArgsMessage(CONFIG_NODE + ".invalid folder");
 	
 	@Nullable
-	private static File getScriptFromArgs(CommandSender sender, String[] args) {
+	private static File getScriptFromArgs(CommandSourceStack sender, String[] args) {
 		String script = StringUtils.join(args, " ", 1, args.length);
 		File f = getScriptFromName(script);
 		if (f == null) {

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -21,8 +21,8 @@ package ch.njol.skript.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.World;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.WeatherEvent;
@@ -66,7 +66,7 @@ public enum WeatherType {
 		return byName.get(s);
 	}
 
-	public static WeatherType fromWorld(final World world) {
+	public static WeatherType fromWorld(final ServerLevel world) {
 		assert world != null;
 		if (world.isThundering() && world.hasStorm()) // Sometimes thundering but no storm
 			return THUNDER;
@@ -103,7 +103,7 @@ public enum WeatherType {
 	}
 
 	@Nullable
-	public static WeatherType fromPlayer(final Player player) {
+	public static WeatherType fromPlayer(final ServerPlayer player) {
 		org.bukkit.WeatherType weather = player.getPlayerWeather();
 		if (weather == null) {
 			return null;
@@ -118,7 +118,7 @@ public enum WeatherType {
 		}
 	}
 
-	public void setWeather(Player player) {
+	public void setWeather(ServerPlayer player) {
 		switch (this) {
 			case RAIN:
 			case THUNDER:
@@ -149,7 +149,7 @@ public enum WeatherType {
 		return adjective;
 	}
 
-	public boolean isWeather(final World w) {
+	public boolean isWeather(final ServerLevel w) {
 		return isWeather(w.hasStorm(), w.isThundering());
 	}
 
@@ -166,7 +166,7 @@ public enum WeatherType {
 		return false;
 	}
 
-	public void setWeather(final World w) {
+	public void setWeather(final ServerLevel w) {
 		if (w.isThundering() != (this == THUNDER))
 			w.setThundering(this == THUNDER);
 		if (w.hasStorm() == (this == CLEAR))

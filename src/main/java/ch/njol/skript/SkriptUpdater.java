@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript;
@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 
-import org.bukkit.command.CommandSender;
+import net.minecraft.commands.CommandSourceStack;
 
 import ch.njol.skript.localization.ArgsMessage;
 import ch.njol.skript.localization.Message;
@@ -81,7 +81,7 @@ public class SkriptUpdater extends Updater {
 	 * @param sender Who should we message.
 	 * @return Future that completes when we're done.
 	 */
-	public CompletableFuture<Void> updateCheck(CommandSender sender) {
+	public CompletableFuture<Void> updateCheck(CommandSourceStack sender) {
 		CompletableFuture<Void> future = checkUpdates().thenAccept(none -> {
 			ReleaseStatus status = getReleaseStatus();
 			switch (status) {
@@ -119,12 +119,12 @@ public class SkriptUpdater extends Updater {
 	 * @param sender Who should we message
 	 * @return Future that completes when we're done.
 	 */
-	public CompletableFuture<Void> changesCheck(CommandSender sender) {
+	public CompletableFuture<Void> changesCheck(CommandSourceStack sender) {
 		CompletableFuture<Void> future = updateCheck(sender).thenAccept(none -> {
 			if (getReleaseStatus() == ReleaseStatus.OUTDATED) {
 				UpdateManifest update = getUpdateManifest();
 				if (update != null) { // Avoid a race condition
-					sender.sendMessage("");
+					sender.sendSystemMessage("");
 					Skript.info(sender, "Patch notes:");
 					for (String line : update.patchNotes.split("\\n")) {
 						// Minecraft doesn't like CRLF, remove it

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions;
@@ -35,10 +35,10 @@ import java.util.stream.Stream;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
+import net.minecraft.server.level.ServerLevel;
+import com.github.ultreon.portutils.BlockInstance;
+import net.minecraft.server.level.ServerPlayer;
+import org.bukkit.util.Vec3;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.hooks.regions.classes.Region;
@@ -65,7 +65,7 @@ public class PreciousStonesHook extends RegionsPlugin<PreciousStones> {
     }
 
     @Override
-    public boolean canBuild_i(final Player p, final Location l) {
+    public boolean canBuild_i(final ServerPlayer p, final Location l) {
         return PreciousStones.API().canBreak(p, l) && PreciousStones.API().canPlace(p, l);
     }
 
@@ -79,7 +79,7 @@ public class PreciousStonesHook extends RegionsPlugin<PreciousStones> {
     }
 
     @Override
-    public @Nullable Region getRegion_i(final World world, final String name) {
+    public @Nullable Region getRegion_i(final ServerLevel world, final String name) {
         return null;
     }
 
@@ -138,8 +138,8 @@ public class PreciousStonesHook extends RegionsPlugin<PreciousStones> {
 
         @SuppressWarnings("null")
 		@Override
-        public Iterator<Block> getBlocks() {
-            final List<Vector> vectors = field.getCorners();
+        public Iterator<BlockInstance> getBlocks() {
+            final List<Vec3> vectors = field.getCorners();
             return new AABB(Bukkit.getWorld(field.getWorld()), vectors.get(0), vectors.get(7)).iterator();
         }
 

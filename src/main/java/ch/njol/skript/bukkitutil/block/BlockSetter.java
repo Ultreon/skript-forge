@@ -1,27 +1,29 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.bukkitutil.block;
 
+import com.github.ultreon.portutils.Location;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import com.github.ultreon.portutils.Material;
+import com.github.ultreon.portutils.BlockInstance;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -66,8 +68,19 @@ public interface BlockSetter {
 	 * @param values Additional block data, such as block states.
 	 * @param flags Flags for block setter.
 	 */
-	void setBlock(Block block, Material type, @Nullable BlockValues values, int flags);
-	
+	void setBlock(BlockInstance block, Material type, @Nullable BlockValues values, int flags);
+
+	/**
+	 * Sets the given block.
+	 * @param block Block to set.
+	 * @param type New type of the block.
+	 * @param values Additional block data, such as block states.
+	 * @param flags Flags for block setter.
+	 */
+	default void setBlock(BlockInstance block, Block type, @Nullable BlockValues values, int flags) {
+		setBlock(block, Material.of(type));
+	}
+
 	/**
 	 * Send a block change to a player.
 	 * <p>This will send a fake block change to the player, and will not change the block on the server.</p>
@@ -77,6 +90,6 @@ public interface BlockSetter {
 	 * @param type Material of change
 	 * @param values Additional block data, such as block states.
 	 */
-	void sendBlockChange(Player player, Location location, Material type, @Nullable BlockValues values);
+	void sendBlockChange(ServerPlayer player, Location location, Block type, @Nullable BlockValues values);
 	
 }

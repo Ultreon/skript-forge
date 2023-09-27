@@ -1,58 +1,59 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.classes.data;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.command.BlockCommandSender;
-import org.bukkit.command.CommandSender;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentOffer;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.util.Vector;
-import org.eclipse.jdt.annotation.Nullable;
-
-import ch.njol.skript.Skript;
-import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.classes.Converter;
 import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.entity.EntityType;
 import ch.njol.skript.entity.XpOrbData;
 import ch.njol.skript.registrations.Converters;
-import ch.njol.skript.util.BlockInventoryHolder;
 import ch.njol.skript.util.BlockUtils;
 import ch.njol.skript.util.Direction;
 import ch.njol.skript.util.EnchantmentType;
 import ch.njol.skript.util.Experience;
 import ch.njol.skript.util.slot.Slot;
+import com.github.ultreon.portutils.BlockInstance;
+import com.github.ultreon.portutils.Forge;
+import com.github.ultreon.portutils.Location;
+import com.github.ultreon.portutils.Material;
+import com.mojang.authlib.GameProfile;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.BlockCommandSourceStack;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.InventoryHolder;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @author Peter Güttinger
@@ -66,53 +67,50 @@ public class DefaultConverters {
 		// Integer - Long
 		Converters.registerConverter(Integer.class, Long.class, Integer::longValue);
 
-		// OfflinePlayer - PlayerInventory
-		Converters.registerConverter(OfflinePlayer.class, PlayerInventory.class, new Converter<OfflinePlayer, PlayerInventory>() {
+		// OfflinePlayer - Inventory
+		Converters.registerConverter(GameProfile.class, Inventory.class, new Converter<GameProfile, Inventory>() {
 			@Override
 			@Nullable
-			public PlayerInventory convert(final OfflinePlayer p) {
-				if (!p.isOnline())
+			public Inventory convert(final GameProfile p) {
+				ServerPlayer player = Forge.getPlayer(p);
+				if (player == null)
 					return null;
-				Player online = p.getPlayer();
-				assert online != null;
-				return online.getInventory();
+				return player.getInventory();
 			}
 		}, Converter.NO_COMMAND_ARGUMENTS);
 		// OfflinePlayer - Player
-		Converters.registerConverter(OfflinePlayer.class, Player.class, new Converter<OfflinePlayer, Player>() {
+		Converters.registerConverter(GameProfile.class, ServerPlayer.class, new Converter<OfflinePlayer, ServerPlayer>() {
 			@Override
 			@Nullable
-			public Player convert(final OfflinePlayer p) {
-				return p.getPlayer();
+			public ServerPlayer convert(final GameProfile p) {
+				return Forge.getPlayer(p);
 			}
 		}, Converter.NO_COMMAND_ARGUMENTS);
 		
 		// TODO improve handling of interfaces
-		// CommandSender - Player
-		Converters.registerConverter(CommandSender.class, Player.class, new Converter<CommandSender, Player>() {
+		// CommandSourceStack - Player
+		Converters.registerConverter(CommandSourceStack.class, ServerPlayer.class, new Converter<CommandSourceStack, ServerPlayer>() {
 			@Override
 			@Nullable
-			public Player convert(final CommandSender s) {
-				if (s instanceof Player)
-					return (Player) s;
-				return null;
+			public ServerPlayer convert(final CommandSourceStack s) {
+				return s.getPlayer();
 			}
 		});
-		// BlockCommandSender - Block
-		Converters.registerConverter(BlockCommandSender.class, Block.class, new Converter<BlockCommandSender, Block>() {
-			@Override
-			@Nullable
-			public Block convert(final BlockCommandSender s) {
-				return s.getBlock();
-			}
-		});
+//		// BlockCommandSourceStack - Block
+//		Converters.registerConverter(BlockCommandSourceStack.class, BlockInstance.class, new Converter<BlockCommandSourceStack, BlockInstance>() {
+//			@Override
+//			@Nullable
+//			public BlockInstance convert(final BlockCommandSourceStack s) {
+//				return s.getBlock();
+//			}
+//		});
 		// Entity - Player
-		Converters.registerConverter(Entity.class, Player.class, new Converter<Entity, Player>() {
+		Converters.registerConverter(Entity.class, ServerPlayer.class, new Converter<Entity, ServerPlayer>() {
 			@Override
 			@Nullable
-			public Player convert(final Entity e) {
-				if (e instanceof Player)
-					return (Player) e;
+			public ServerPlayer convert(final Entity e) {
+				if (e instanceof ServerPlayer player)
+					return player;
 				return null;
 			}
 		});
@@ -127,33 +125,34 @@ public class DefaultConverters {
 			}
 		});
 		
-		// Block - Inventory
-		Converters.registerConverter(Block.class, Inventory.class, new Converter<Block, Inventory>() {
+		// Block - AbstractContainerMenu
+		Converters.registerConverter(BlockInstance.class, AbstractContainerMenu.class, new Converter<BlockInstance, AbstractContainerMenu>() {
 			@Override
 			@Nullable
-			public Inventory convert(final Block b) {
-				if (b.getState() instanceof InventoryHolder)
-					return ((InventoryHolder) b.getState()).getInventory();
+			public AbstractContainerMenu convert(final BlockInstance b) {
+//				if (b.getState().getBlock() instanceof EntityBlock)
+//					return ((EntityBlock) b.getState()).getInventory();
+//				return null;
 				return null;
 			}
 		}, Converter.NO_COMMAND_ARGUMENTS);
 		
-		// Entity - Inventory
-		Converters.registerConverter(Entity.class, Inventory.class, new Converter<Entity, Inventory>() {
-			@Override
-			@Nullable
-			public Inventory convert(final Entity e) {
-				if (e instanceof InventoryHolder)
-					return ((InventoryHolder) e).getInventory();
-				return null;
-			}
-		}, Converter.NO_COMMAND_ARGUMENTS);
+//		// Entity - AbstractContainerMenu
+//		Converters.registerConverter(Entity.class, AbstractContainerMenu.class, new Converter<Entity, AbstractContainerMenu>() {
+//			@Override
+//			@Nullable
+//			public AbstractContainerMenu convert(final Entity e) {
+//				if (e instanceof InventoryHolder)
+//					return ((InventoryHolder) e).getInventory();
+//				return null;
+//			}
+//		}, Converter.NO_COMMAND_ARGUMENTS);
 		
 		// Block - ItemType
-		Converters.registerConverter(Block.class, ItemType.class, new Converter<Block, ItemType>() {
+		Converters.registerConverter(BlockInstance.class, Item.class, new Converter<BlockInstance, Item>() {
 			@Override
-			public ItemType convert(final Block b) {
-				return new ItemType(b);
+			public Item convert(final BlockInstance b) {
+				return b.getType().asItem();
 			}
 		}, Converter.NO_LEFT_CHAINING | Converter.NO_COMMAND_ARGUMENTS);
 		
@@ -164,10 +163,10 @@ public class DefaultConverters {
 //				return l.getBlock();
 //			}
 //		});
-		Converters.registerConverter(Block.class, Location.class, new Converter<Block, Location>() {
+		Converters.registerConverter(BlockInstance.class, Location.class, new Converter<BlockInstance, Location>() {
 			@Override
 			@Nullable
-			public Location convert(final Block b) {
+			public Location convert(final BlockInstance b) {
 				return BlockUtils.getLocation(b);
 			}
 		}, Converter.NO_COMMAND_ARGUMENTS);
@@ -252,10 +251,10 @@ public class DefaultConverters {
 				return new ItemType(i != null ? i : new ItemStack(Material.AIR, 1));
 			}
 		});
-//		// Slot - Inventory
-//		Skript.addConverter(Slot.class, Inventory.class, new Converter<Slot, Inventory>() {
+//		// Slot - AbstractContainerMenu
+//		Skript.addConverter(Slot.class, AbstractContainerMenu.class, new Converter<Slot, AbstractContainerMenu>() {
 //			@Override
-//			public Inventory convert(final Slot s) {
+//			public AbstractContainerMenu convert(final Slot s) {
 //				if (s == null)
 //					return null;
 //				return s.getInventory();
@@ -263,10 +262,10 @@ public class DefaultConverters {
 //		});
 		
 		// Block - InventoryHolder
-		Converters.registerConverter(Block.class, InventoryHolder.class, new Converter<Block, InventoryHolder>() {
+		Converters.registerConverter(BlockInstance.class, InventoryHolder.class, new Converter<BlockInstance, InventoryHolder>() {
 			@Override
 			@Nullable
-			public InventoryHolder convert(final Block b) {
+			public InventoryHolder convert(final BlockInstance b) {
 				final BlockState s = b.getState();
 				if (s instanceof InventoryHolder)
 					return (InventoryHolder) s;
@@ -274,27 +273,27 @@ public class DefaultConverters {
 			}
 		}, Converter.NO_RIGHT_CHAINING | Converter.NO_COMMAND_ARGUMENTS);
 		
-		Converters.registerConverter(InventoryHolder.class, Block.class, new Converter<InventoryHolder, Block>() {
-			@Override
-			@Nullable
-			public Block convert(final InventoryHolder holder) {
-				if (holder instanceof BlockState)
-					return new BlockInventoryHolder((BlockState) holder);
-				if (holder instanceof DoubleChest)
-					return holder.getInventory().getLocation().getBlock();
-				return null;
-			}
-		});
+//		Converters.registerConverter(InventoryHolder.class, BlockInstance.class, new Converter<InventoryHolder, BlockInstance>() {
+//			@Override
+//			@Nullable
+//			public BlockInstance convert(final InventoryHolder holder) {
+//				if (holder instanceof BlockState)
+//					return new BlockInventoryHolder((BlockState) holder);
+//				if (holder instanceof DoubleChest)
+//					return holder.getInventory().getLocation().getBlock();
+//				return null;
+//			}
+//		});
 		
-		Converters.registerConverter(InventoryHolder.class, Entity.class, new Converter<InventoryHolder, Entity>() {
-			@Override
-			@Nullable
-			public Entity convert(InventoryHolder holder) {
-				if (holder instanceof Entity)
-					return (Entity) holder;
-				return null;
-			}
-		});
+//		Converters.registerConverter(InventoryHolder.class, Entity.class, new Converter<InventoryHolder, Entity>() {
+//			@Override
+//			@Nullable
+//			public Entity convert(InventoryHolder holder) {
+//				if (holder instanceof Entity)
+//					return (Entity) holder;
+//				return null;
+//			}
+//		});
 		
 //		// World - Time
 //		Skript.registerConverter(World.class, Time.class, new Converter<World, Time>() {
@@ -331,34 +330,34 @@ public class DefaultConverters {
 //			
 //		});
 		
-		// Number - Vector; DISABLED due to performance problems
-//		Converters.registerConverter(Number.class, Vector.class, new Converter<Number, Vector>() {
+		// Number - Vec3; DISABLED due to performance problems
+//		Converters.registerConverter(Number.class, Vec3.class, new Converter<Number, Vec3>() {
 //			@Override
 //			@Nullable
-//			public Vector convert(Number number) {
-//				return new Vector(number.doubleValue(), number.doubleValue(), number.doubleValue());
+//			public Vec3 convert(Number number) {
+//				return new Vec3(number.doubleValue(), number.doubleValue(), number.doubleValue());
 //			}
 //		});
 
-		// Vector - Direction
-		Converters.registerConverter(Vector.class, Direction.class, new Converter<Vector, Direction>() {
+		// Vec3 - Direction
+		Converters.registerConverter(Vec3.class, Direction.class, new Converter<Vec3, Direction>() {
 			@Override
 			@Nullable
-			public Direction convert(Vector vector) {
+			public Direction convert(Vec3 vector) {
 				return new Direction(vector);
 			}
 		});
 		
-		// EnchantmentOffer Converters
-		// EnchantmentOffer - EnchantmentType
-		Converters.registerConverter(EnchantmentOffer.class, EnchantmentType.class, new Converter<EnchantmentOffer, EnchantmentType>() {
-			@Nullable
-			@Override
-			public EnchantmentType convert(EnchantmentOffer eo) {
-				return new EnchantmentType(eo.getEnchantment(), eo.getEnchantmentLevel());
-			}
-		});
+//		// EnchantmentOffer Converters
+//		// EnchantmentOffer - EnchantmentType
+//		Converters.registerConverter(EnchantmentOffer.class, EnchantmentType.class, new Converter<EnchantmentOffer, EnchantmentType>() {
+//			@Nullable
+//			@Override
+//			public EnchantmentType convert(EnchantmentOffer eo) {
+//				return new EnchantmentType(eo.getEnchantment(), eo.getEnchantmentLevel());
+//			}
+//		});
 
-		Converters.registerConverter(String.class, World.class, Bukkit::getWorld);
+		Converters.registerConverter(String.class, ServerLevel.class, Forge::getLevel);
 	}
 }

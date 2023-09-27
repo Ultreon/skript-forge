@@ -1,36 +1,25 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.classes.data;
 
-import java.util.Calendar;
-
-import ch.njol.skript.lang.function.FunctionEvent;
-import ch.njol.skript.lang.function.JavaFunction;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.util.Vector;
-
 import ch.njol.skript.expressions.base.EventValueExpression;
-import ch.njol.skript.lang.function.Functions;
-import ch.njol.skript.lang.function.Parameter;
-import ch.njol.skript.lang.function.SimpleJavaFunction;
+import ch.njol.skript.lang.function.*;
 import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.skript.registrations.DefaultClasses;
 import ch.njol.skript.util.Color;
@@ -39,7 +28,14 @@ import ch.njol.skript.util.Date;
 import ch.njol.util.Math2;
 import ch.njol.util.StringUtils;
 import ch.njol.util.coll.CollectionUtils;
+import com.github.ultreon.portutils.Forge;
+import com.github.ultreon.portutils.Location;
+import com.github.ultreon.portutils.World;
+import com.mojang.math.Vec3;
+import net.minecraft.server.level.ServerLevel;
 import org.eclipse.jdt.annotation.Nullable;
+
+import java.util.Calendar;
 
 /**
  * @author Peter Güttinger
@@ -300,13 +296,13 @@ public class DefaultFunctions {
 		
 		// misc
 		
-		Functions.registerFunction(new SimpleJavaFunction<World>("world", new Parameter[] {
+		Functions.registerFunction(new SimpleJavaFunction<ServerLevel>("world", new Parameter[] {
 			new Parameter<>("name", DefaultClasses.STRING, true, null)
 		}, DefaultClasses.WORLD, true) {
 			@Override
-			public World[] executeSimple(Object[][] params) {
-				World w = Bukkit.getWorld((String) params[0][0]);
-				return w == null ? new World[0] : new World[] {w};
+			public ServerLevel[] executeSimple(Object[][] params) {
+				World w = Forge.getWorld((String) params[0][0]);
+				return w == null ? new ServerLevel[0] : new ServerLevel[] {w.getLevel()};
 			}
 		}).description("Gets a world from its name.")
 			.examples("set {_nether} to world(\"%{_world}%_nether\")")
@@ -318,7 +314,7 @@ public class DefaultFunctions {
 			new Parameter<>("x", DefaultClasses.NUMBER, true, null),
 			new Parameter<>("y", DefaultClasses.NUMBER, true, null),
 			new Parameter<>("z", DefaultClasses.NUMBER, true, null),
-			new Parameter<>("world", DefaultClasses.WORLD, true, new EventValueExpression<>(World.class)),
+			new Parameter<>("world", DefaultClasses.WORLD, true, new EventValueExpression<>(ServerLevel.class)),
 			new Parameter<>("yaw", DefaultClasses.NUMBER, true, new SimpleLiteral<Number>(0, true)),
 			new Parameter<>("pitch", DefaultClasses.NUMBER, true, new SimpleLiteral<Number>(0, true))
 		}, DefaultClasses.LOCATION, true) {
@@ -330,9 +326,9 @@ public class DefaultFunctions {
 						return null;
 				}
 
-				World world = params[3].length == 1 ? (World) params[3][0] : Bukkit.getWorlds().get(0); // fallback to main world of server
+				ServerLevel world = params[3].length == 1 ? (ServerLevel) params[3][0] : Forge.getLevels().get(0); // fallback to main world of server
 
-				return new Location[] {new Location(world,
+				return new Location[] {new Location(new World(world),
 					((Number) params[0][0]).doubleValue(), ((Number) params[1][0]).doubleValue(), ((Number) params[2][0]).doubleValue(),
 					((Number) params[4][0]).floatValue(), ((Number) params[5][0]).floatValue())};
 			}
@@ -408,14 +404,14 @@ public class DefaultFunctions {
 			.examples("date(2014, 10, 1) # 0:00, 1st October 2014", "date(1990, 3, 5, 14, 30) # 14:30, 5th May 1990", "date(1999, 12, 31, 23, 59, 59, 999, -3*60, 0) # almost year 2000 in parts of Brazil (-3 hours offset, no DST)")
 			.since("2.2"));
 		
-		Functions.registerFunction(new SimpleJavaFunction<Vector>("vector", new Parameter[] {
+		Functions.registerFunction(new SimpleJavaFunction<Vec3>("vector", new Parameter[] {
 			new Parameter<>("x", DefaultClasses.NUMBER, true, null),
 			new Parameter<>("y", DefaultClasses.NUMBER, true, null),
 			new Parameter<>("z", DefaultClasses.NUMBER, true, null)
 		}, DefaultClasses.VECTOR, true) {
 			@Override
-			public Vector[] executeSimple(Object[][] params) {
-				return new Vector[] {new Vector(
+			public Vec3[] executeSimple(Object[][] params) {
+				return new Vec3[] {new Vec3(
 					((Number)params[0][0]).doubleValue(),
 					((Number)params[1][0]).doubleValue(),
 					((Number)params[2][0]).doubleValue()

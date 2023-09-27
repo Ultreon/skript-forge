@@ -1,31 +1,30 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.lang;
 
-import java.util.Locale;
-
-import org.skriptlang.skript.lang.structure.StructureInfo;
-import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.eclipse.jdt.annotation.Nullable;
-
 import ch.njol.skript.SkriptAPIException;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
+import org.eclipse.jdt.annotation.Nullable;
+import org.skriptlang.skript.lang.structure.StructureInfo;
+
+import java.util.Locale;
 
 public final class SkriptEventInfo<E extends SkriptEvent> extends StructureInfo<E> {
 	
@@ -63,8 +62,8 @@ public final class SkriptEventInfo<E extends SkriptEvent> extends StructureInfo<
 		for (int i = 0; i < events.length; i++) {
 			for (int j = i + 1; j < events.length; j++) {
 				if (events[i].isAssignableFrom(events[j]) || events[j].isAssignableFrom(events[i])) {
-					if (events[i].equals(PlayerInteractAtEntityEvent.class)
-							|| events[j].equals(PlayerInteractAtEntityEvent.class))
+					if (events[i].equals(PlayerInteractEvent.class)
+							|| events[j].equals(PlayerInteractEvent.class))
 						continue; // Spigot seems to have an exception for those two events...
 					
 					throw new SkriptAPIException("The event " + name + " (" + c.getName() + ") registers with super/subclasses " + events[i].getName() + " and " + events[j].getName());

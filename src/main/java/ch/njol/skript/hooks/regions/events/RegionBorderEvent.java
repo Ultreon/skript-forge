@@ -1,26 +1,26 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions.events;
 
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 import org.bukkit.event.HandlerList;
 
 import ch.njol.skript.hooks.regions.classes.Region;
@@ -31,10 +31,10 @@ import ch.njol.skript.hooks.regions.classes.Region;
 public class RegionBorderEvent extends Event implements Cancellable {
 	
 	private final Region region;
-	final Player player;
+	final ServerPlayer player;
 	private final boolean enter;
 	
-	public RegionBorderEvent(final Region region, final Player player, final boolean enter) {
+	public RegionBorderEvent(final Region region, final ServerPlayer player, final boolean enter) {
 		this.region = region;
 		this.player = player;
 		this.enter = enter;
@@ -48,7 +48,7 @@ public class RegionBorderEvent extends Event implements Cancellable {
 		return region;
 	}
 	
-	public Player getPlayer() {
+	public ServerPlayer getPlayer() {
 		return player;
 	}
 	

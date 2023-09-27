@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -23,13 +23,15 @@ import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.bukkitutil.block.BlockCompat;
 import ch.njol.skript.bukkitutil.block.BlockSetter;
 import ch.njol.skript.bukkitutil.block.BlockValues;
+import com.github.ultreon.portutils.Location;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import com.github.ultreon.portutils.Material;
+import com.github.ultreon.portutils.BlockInstance;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.Arrays;
@@ -47,7 +49,7 @@ public class BlockUtils {
 	 * @param applyPhysics Whether physics should be applied or not.
 	 * @return Whether setting block succeeded or not (currently always true).
 	 */
-	public static boolean set(Block block, Material type, @Nullable BlockValues blockValues, boolean applyPhysics) {
+	public static boolean set(BlockInstance block, Material type, @Nullable BlockValues blockValues, boolean applyPhysics) {
 		int flags = BlockSetter.ROTATE | BlockSetter.ROTATE_FIX_TYPE | BlockSetter.MULTIPART;
 		if (applyPhysics)
 			flags |= BlockSetter.APPLY_PHYSICS;
@@ -55,17 +57,34 @@ public class BlockUtils {
 
 		return true;
 	}
-	
-	public static boolean set(Block block, ItemData type, boolean applyPhysics) {
+
+	/**
+	 * Sets the given block.
+	 * @param block Block to set.
+	 * @param type New type of the block.
+	 * @param blockValues Block values to apply after setting the type.
+	 * @param applyPhysics Whether physics should be applied or not.
+	 * @return Whether setting block succeeded or not (currently always true).
+	 */
+	public static boolean set(BlockInstance block, Block type, @Nullable BlockValues blockValues, boolean applyPhysics) {
+		int flags = BlockSetter.ROTATE | BlockSetter.ROTATE_FIX_TYPE | BlockSetter.MULTIPART;
+		if (applyPhysics)
+			flags |= BlockSetter.APPLY_PHYSICS;
+		BlockCompat.SETTER.setBlock(block, type, blockValues, flags);
+
+		return true;
+	}
+
+	public static boolean set(BlockInstance block, ItemData type, boolean applyPhysics) {
 		return set(block, type.getType(), type.getBlockValues(), applyPhysics);
 	}
 	
-	public static void sendBlockChange(Player player, Location location, Material type, @Nullable BlockValues blockValues) {
+	public static void sendBlockChange(ServerPlayer player, Location location, Block type, @Nullable BlockValues blockValues) {
 		BlockCompat.SETTER.sendBlockChange(player, location, type, blockValues);
 	}
 	
 	@SuppressWarnings("null")
-	public static Iterable<Block> getBlocksAround(Block b) {
+	public static Iterable<BlockInstance> getBlocksAround(BlockInstance b) {
 		return Arrays.asList(b.getRelative(BlockFace.NORTH), b.getRelative(BlockFace.EAST), b.getRelative(BlockFace.SOUTH), b.getRelative(BlockFace.WEST));
 	}
 	
@@ -79,14 +98,14 @@ public class BlockUtils {
 	 * @return Location of the block, including its direction
 	 */
 	@Nullable
-	public static Location getLocation(@Nullable Block b) {
+	public static Location getLocation(@Nullable BlockInstance b) {
 		if (b == null)
 			return null;
 		Location l = b.getLocation().add(0.5, 0.5, 0.5);
-		BlockFace blockFace = Direction.getFacing(b);
-		if (blockFace != BlockFace.SELF) {
-			l.setPitch(Direction.getPitch(Math.asin(blockFace.getModY())));
-			l.setYaw(Direction.getYaw(Math.atan2(blockFace.getModZ(), blockFace.getModX())));
+		net.minecraft.core.Direction blockFace = Direction.getFacing(b);
+		if (blockFace != null) {
+			l.getXRot(Direction.getPitch(Math.asin(blockFace.getModY())));
+			l.setYRot(Direction.getYaw(Math.atan2(blockFace.getModZ(), blockFace.getModX())));
 		}
 		return l;
 	}
@@ -119,7 +138,7 @@ public class BlockUtils {
 	 * @return String version of block
 	 */
 	@Nullable
-	public static String blockToString(Block block, int flags) {
+	public static String blockToString(BlockInstance block, int flags) {
 		String type = ItemType.toString(block, flags);
 		Location location = getLocation(block);
 		if (location == null) {
@@ -140,7 +159,7 @@ public class BlockUtils {
 	 *
 	 * @return the actual CB block from the given argument
 	 */
-	public static Block extractBlock(Block block) {
+	public static BlockInstance extractBlock(BlockInstance block) {
 		return block instanceof DelayedChangeBlock ? ((DelayedChangeBlock) block).block : block;
 	}
 

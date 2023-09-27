@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -24,15 +24,22 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import ch.njol.skript.Skript;
+import com.github.ultreon.portutils.Forge;
+import com.github.ultreon.portutils.Location;
+import com.mojang.math.Vec3;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import com.github.ultreon.portutils.Material;
+import com.github.ultreon.portutils.BlockInstance;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 import org.bukkit.material.Directional;
-import org.bukkit.util.Vector;
+import org.bukkit.util.Vec3;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -106,51 +113,51 @@ public class Direction implements YggdrasilRobustSerializable {
 		lengthOrZ = length;
 	}
 	
-	public Direction(final BlockFace f, final double length) {
-		this(new Vector(f.getModX(), f.getModY(), f.getModZ()).normalize().multiply(length));
+	public Direction(final Direction f, final double length) {
+		this(new Vec3(f.pitchOrX, f.yawOrY, f.lengthOrZ).normalize().multiply(length));
 	}
 	
-	public Direction(final Vector v) {
+	public Direction(final Vec3 v) {
 		relative = false;
-		pitchOrX = v.getX();
-		yawOrY = v.getY();
-		lengthOrZ = v.getZ();
+		pitchOrX = v.x;
+		yawOrY = v.y;
+		lengthOrZ = v.z;
 	}
 	
 	public Location getRelative(final Location l) {
-		return l.clone().add(getDirection(l));
+		return l.copy().add(getDirection(l));
 	}
 	
 	public Location getRelative(final Entity e) {
-		return e.getLocation().add(getDirection(e.getLocation()));
+		return Forge.getEntityLocation(e).add(getDirection(Forge.getEntityLocation(e)));
 	}
 	
-	public Location getRelative(final Block b) {
+	public Location getRelative(final BlockInstance b) {
 		return b.getLocation().add(getDirection(b));
 	}
 	
-	public Vector getDirection(final Location l) {
+	public Vec3 getDirection(final Location l) {
 		if (!relative)
-			return new Vector(pitchOrX, yawOrY, lengthOrZ);
-		return getDirection(pitchOrX == IGNORE_PITCH ? 0 : pitchToRadians(l.getPitch()), yawToRadians(l.getYaw()));
+			return new Vec3(pitchOrX, yawOrY, lengthOrZ);
+		return getDirection(pitchOrX == IGNORE_PITCH ? 0 : pitchToRadians(l.getXRot()), yawToRadians(l.getYRot()));
 	}
 	
-	public Vector getDirection(final Entity e) {
-		return getDirection(e.getLocation());
+	public Vec3 getDirection(final Entity e) {
+		return getDirection(new Location(e.level, e.position()));
 	}
 	
-	public Vector getDirection(Block b) {
+	public Vec3 getDirection(BlockInstance b) {
 		if (!relative)
-			return new Vector(pitchOrX, yawOrY, lengthOrZ);
+			return new Vec3(pitchOrX, yawOrY, lengthOrZ);
 		BlockFace blockFace = getFacing(b);
 		return getDirection(pitchOrX == IGNORE_PITCH ? 0 : blockFace.getModZ() * Math.PI / 2 /* only up and down have a z mod */, Math.atan2(blockFace.getModZ(), blockFace.getModX()));
 	}
 	
-	private Vector getDirection(final double p, final double y) {
+	private Vec3 getDirection(final double p, final double y) {
 		if (pitchOrX == IGNORE_PITCH)
-			return new Vector(Math.cos(y + yawOrY) * lengthOrZ, 0, Math.sin(y + yawOrY) * lengthOrZ);
+			return new Vec3(Math.cos(y + yawOrY) * lengthOrZ, 0, Math.sin(y + yawOrY) * lengthOrZ);
 		final double lxz = Math.cos(p + pitchOrX) * lengthOrZ;
-		return new Vector(Math.cos(y + yawOrY) * lxz, Math.sin(p + pitchOrX) * Math.cos(yawOrY) * lengthOrZ, Math.sin(y + yawOrY) * lxz);
+		return new Vec3(Math.cos(y + yawOrY) * lxz, Math.sin(p + pitchOrX) * Math.cos(yawOrY) * lengthOrZ, Math.sin(y + yawOrY) * lxz);
 	}
 	
 	@Override
@@ -214,11 +221,12 @@ public class Direction implements YggdrasilRobustSerializable {
 	 * @return The facing of the block or {@link BlockFace#SELF} if the block doesn't have a facing.
 	 */
 	@SuppressWarnings("deprecation")
-	public static BlockFace getFacing(Block b) {
-		BlockData blockData = b.getBlockData();
-		if (!(blockData instanceof org.bukkit.block.data.Directional))
-			return BlockFace.SELF;
-		return ((org.bukkit.block.data.Directional) blockData).getFacing();
+	@org.jetbrains.annotations.Nullable
+	public static net.minecraft.core.Direction getFacing(BlockInstance b) {
+		Block blockData = b.getType();
+		if (!(blockData instanceof DirectionalBlock))
+			return null;
+		return b.getState().getValue(DirectionalBlock.FACING);
 	}
 	
 	public static BlockFace getFacing(final double yaw, final double pitch) {
@@ -243,14 +251,14 @@ public class Direction implements YggdrasilRobustSerializable {
 		return getFacing(yaw, pitch);
 	}
 	
-	public static BlockFace getFacing(final Vector v, final boolean horizontal) {
+	public static BlockFace getFacing(final Vec3 v, final boolean horizontal) {
 		final double pitch = horizontal ? 0 : Math.atan2(v.getY(), Math.sqrt(Math.pow(v.getX(), 2) + Math.pow(v.getZ(), 2)));
 		final double yaw = Math.atan2(v.getZ(), v.getX());
 		return getFacing(yaw, pitch);
 	}
 	
 	@SuppressWarnings("null")
-	public static Location[] getRelatives(final Block[] blocks, final Direction[] directions) {
+	public static Location[] getRelatives(final BlockInstance[] blocks, final Direction[] directions) {
 		final Location[] r = new Location[blocks.length * directions.length];
 		if (r.length == 0)
 			return r;
@@ -312,7 +320,7 @@ public class Direction implements YggdrasilRobustSerializable {
 		return toString(mod, absoluteDirections);
 	}
 	
-	public static String toString(final Vector dir) {
+	public static String toString(final Vec3 dir) {
 		if (dir.getX() == 0 && dir.getY() == 0 && dir.getZ() == 0)
 			return Language.get("directions.at");
 		return toString(new double[] {dir.getX(), dir.getY(), dir.getZ()}, absoluteDirections);

@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.util;
@@ -21,27 +21,28 @@ package ch.njol.skript.util;
 import ch.njol.skript.Skript;
 import ch.njol.skript.bukkitutil.block.BlockCompat;
 import com.destroystokyo.paper.block.BlockSoundGroup;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import com.github.ultreon.portutils.Material;
 import org.bukkit.SoundGroup;
-import org.bukkit.World;
+import net.minecraft.server.level.ServerLevel;
 import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
+import com.github.ultreon.portutils.BlockInstance;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
+import org.bukkit.util.Vec3;
 import org.bukkit.util.VoxelShape;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -54,20 +55,20 @@ import java.util.List;
  * any changes by 1 tick of reflects them on a given BlockState
  * depending on which constructor is used.
  */
-public class DelayedChangeBlock implements Block {
+public class DelayedChangeBlock implements BlockInstance {
 
-	private static final boolean ISPASSABLE_METHOD_EXISTS = Skript.methodExists(Block.class, "isPassable");
+	private static final boolean ISPASSABLE_METHOD_EXISTS = Skript.methodExists(BlockInstance.class, "isPassable");
 
-	final Block block;
+	final BlockInstance block;
 	@Nullable
 	private final BlockState newState;
 	private final boolean isPassable;
 
-	public DelayedChangeBlock(Block block) {
+	public DelayedChangeBlock(BlockInstance block) {
 		this(block, null);
 	}
 
-	public DelayedChangeBlock(Block block, @Nullable BlockState newState) {
+	public DelayedChangeBlock(BlockInstance block, @Nullable BlockState newState) {
 		assert block != null;
 		this.block = block;
 		this.newState = newState;
@@ -104,22 +105,22 @@ public class DelayedChangeBlock implements Block {
 	}
 
 	@Override
-	public Block getRelative(int modX, int modY, int modZ) {
+	public BlockInstance getRelative(int modX, int modY, int modZ) {
 		return block.getRelative(modX, modY, modZ);
 	}
 
 	@Override
-	public Block getRelative(BlockFace face) {
+	public BlockInstance getRelative(BlockFace face) {
 		return block.getRelative(face);
 	}
 
 	@Override
-	public Block getRelative(BlockFace face, int distance) {
+	public BlockInstance getRelative(BlockFace face, int distance) {
 		return block.getRelative(face, distance);
 	}
 
 	@Override
-	public Material getType() {
+	public Block getType() {
 		return block.getType();
 	}
 
@@ -139,7 +140,7 @@ public class DelayedChangeBlock implements Block {
 	}
 
 	@Override
-	public World getWorld() {
+	public ServerLevel getWorld() {
 		return block.getWorld();
 	}
 
@@ -184,7 +185,7 @@ public class DelayedChangeBlock implements Block {
 
 	@Nullable
 	@Override
-	public BlockFace getFace(Block block) {
+	public BlockFace getFace(BlockInstance block) {
 		return block.getFace(block);
 	}
 
@@ -436,7 +437,7 @@ public class DelayedChangeBlock implements Block {
 
 	@Nullable
 	@Override
-	public RayTraceResult rayTrace(Location start, Vector direction, double maxDistance, FluidCollisionMode fluidCollisionMode) {
+	public RayTraceResult rayTrace(Location start, Vec3 direction, double maxDistance, FluidCollisionMode fluidCollisionMode) {
 		return block.rayTrace(start, direction, maxDistance, fluidCollisionMode);
 	}
 
@@ -497,7 +498,7 @@ public class DelayedChangeBlock implements Block {
 	}
 
 	@Override
-	public float getBreakSpeed(@NotNull Player player) {
+	public float getBreakSpeed(@NotNull ServerPlayer player) {
 		return block.getBreakSpeed(player);
 	}
 

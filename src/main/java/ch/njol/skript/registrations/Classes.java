@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.registrations;
@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.minecraft.ChatFormatting;
 import org.bukkit.Chunk;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -629,7 +629,7 @@ public abstract class Classes {
 		return toString(os, and, null, StringMode.MESSAGE, flags);
 	}
 	
-	public static String toString(final Object[] os, final int flags, final @Nullable ChatColor c) {
+	public static String toString(final Object[] os, final int flags, final @Nullable ChatFormatting c) {
 		return toString(os, true, c, StringMode.MESSAGE, flags);
 	}
 	
@@ -641,7 +641,7 @@ public abstract class Classes {
 		return toString(os, and, null, mode, 0);
 	}
 	
-	private static String toString(final Object[] os, final boolean and, final @Nullable ChatColor c, final StringMode mode, final int flags) {
+	private static String toString(final Object[] os, final boolean and, final @Nullable ChatFormatting c, final StringMode mode, final int flags) {
 		if (os.length == 0)
 			return toString(null);
 		if (os.length == 1)

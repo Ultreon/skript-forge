@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.bukkitutil;
@@ -25,8 +25,8 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
+import com.github.ultreon.portutils.Material;
+import net.minecraft.server.level.ServerPlayer;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -39,14 +39,14 @@ import ch.njol.skript.util.Task;
  */
 public abstract class PlayerUtils {
 
-	private static final Set<Player> inventoryUpdateList = Collections.synchronizedSet(new HashSet<>());
+	private static final Set<ServerPlayer> inventoryUpdateList = Collections.synchronizedSet(new HashSet<>());
 
 	/**
 	 * Updates the clients inventory within a tick, using {@link Player#updateInventory()}.
 	 * Recommended over directly calling the update method,
 	 * as multiple calls to this method within a short timespan will not send multiple updates to the client.
 	 */
-	public static void updateInventory(@Nullable Player player) {
+	public static void updateInventory(@Nullable ServerPlayer player) {
 		if (player != null)
 			inventoryUpdateList.add(player);
 	}
@@ -55,7 +55,7 @@ public abstract class PlayerUtils {
 		new Task(Skript.getInstance(), 1, 1) {
 			@Override
 			public void run() {
-				for (Player p : inventoryUpdateList)
+				for (ServerPlayer p : inventoryUpdateList)
 					p.updateInventory();
 
 				inventoryUpdateList.clear();
@@ -67,11 +67,11 @@ public abstract class PlayerUtils {
 	 * @deprecated use {@link Bukkit#getOnlinePlayers()} instead
 	 */
 	@Deprecated
-	public static Collection<? extends Player> getOnlinePlayers() {
+	public static Collection<? extends ServerPlayer> getOnlinePlayers() {
 		return ImmutableList.copyOf(Bukkit.getOnlinePlayers());
 	}
 
-	public static boolean canEat(Player p, Material food) {
+	public static boolean canEat(ServerPlayer p, Material food) {
 		GameMode gm = p.getGameMode();
 		if (gm == GameMode.CREATIVE || gm == GameMode.SPECTATOR)
 			return false; // Can't eat anything in those gamemodes

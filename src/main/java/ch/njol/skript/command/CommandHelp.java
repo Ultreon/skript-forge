@@ -1,31 +1,31 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.command;
 
-import static org.bukkit.ChatColor.GRAY;
-import static org.bukkit.ChatColor.RESET;
+import static net.minecraft.ChatFormatting.GRAY;
+import static net.minecraft.ChatFormatting.RESET;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
 
-import org.bukkit.command.CommandSender;
+import net.minecraft.commands.CommandSourceStack;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.Skript;
@@ -112,11 +112,11 @@ public class CommandHelp {
 		}
 	}
 	
-	public boolean test(final CommandSender sender, final String[] args) {
+	public boolean test(final CommandSourceStack sender, final String[] args) {
 		return test(sender, args, 0);
 	}
 	
-	private boolean test(final CommandSender sender, final String[] args, final int index) {
+	private boolean test(final CommandSourceStack sender, final String[] args, final int index) {
 		if (index >= args.length) {
 			showHelp(sender);
 			return false;
@@ -131,11 +131,11 @@ public class CommandHelp {
 		return true;
 	}
 	
-	public void showHelp(final CommandSender sender) {
+	public void showHelp(final CommandSourceStack sender) {
 		showHelp(sender, m_usage.toString());
 	}
 	
-	private void showHelp(final CommandSender sender, final String pre) {
+	private void showHelp(final CommandSourceStack sender, final String pre) {
 		Skript.message(sender, pre + " " + command + " " + argsColor + "...");
 		for (final Entry<String, Object> e : arguments.entrySet()) {
 			Skript.message(sender, "  " + argsColor + e.getKey() + " " + GRAY + "-" + RESET + " " + e.getValue());

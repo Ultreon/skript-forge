@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ch.njol.skript.SkriptAPIException;
@@ -47,7 +47,7 @@ import ch.njol.util.Kleenean;
  * A useful class for creating default expressions. It simply returns the event value of the given type.
  * <p>
  * This class can be used as default expression with <code>new EventValueExpression&lt;T&gt;(T.class)</code> or extended to make it manually placeable in expressions with:
- * 
+ *
  * <pre>
  * class MyExpression extends EventValueExpression&lt;SomeClass&gt; {
  * 	public MyExpression() {
@@ -56,29 +56,29 @@ import ch.njol.util.Kleenean;
  * 	// ...
  * }
  * </pre>
- * 
+ *
  * @author Peter Güttinger
  * @see Classes#registerClass(ClassInfo)
  * @see ClassInfo#defaultExpression(DefaultExpression)
  * @see DefaultExpression
  */
 public class EventValueExpression<T> extends SimpleExpression<T> implements DefaultExpression<T> {
-	
+
 	private final Class<? extends T> c;
 	@Nullable
 	private Changer<? super T> changer;
 	private final Map<Class<? extends Event>, Getter<? extends T, ?>> getters = new HashMap<>();
-	
+
 	public EventValueExpression(final Class<? extends T> c) {
 		this(c, null);
 	}
-	
+
 	public EventValueExpression(final Class<? extends T> c, final @Nullable Changer<? super T> changer) {
 		assert c != null;
 		this.c = c;
 		this.changer = changer;
 	}
-	
+
 	@Override
 	@Nullable
 	protected T[] get(final Event e) {
@@ -90,7 +90,7 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 		one[0] = o;
 		return one;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private <E extends Event> T getValue(final E e) {
@@ -98,26 +98,26 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 			final Getter<? extends T, ? super E> g = (Getter<? extends T, ? super E>) getters.get(e.getClass());
 			return g == null ? null : g.get(e);
 		}
-		
+
 		for (final Entry<Class<? extends Event>, Getter<? extends T, ?>> p : getters.entrySet()) {
 			if (p.getKey().isAssignableFrom(e.getClass())) {
 				getters.put(e.getClass(), p.getValue());
 				return p.getValue() == null ? null : ((Getter<? extends T, ? super E>) p.getValue()).get(e);
 			}
 		}
-		
+
 		getters.put(e.getClass(), null);
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public boolean init(final Expression<?>[] exprs, final int matchedPattern, final Kleenean isDelayed, final ParseResult parser) {
 		if (exprs.length != 0)
 			throw new SkriptAPIException(this.getClass().getName() + " has expressions in its pattern but does not override init(...)");
 		return init();
 	}
-	
+
 	@SuppressWarnings("null")
 	@Override
 	public boolean init() {
@@ -150,24 +150,24 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 			log.stop();
 		}
 	}
-	
+
 	@Override
 	public Class<? extends T> getReturnType() {
 		return c;
 	}
-	
+
 	@Override
 	public boolean isSingle() {
 		return true;
 	}
-	
+
 	@Override
 	public String toString(final @Nullable Event e, final boolean debug) {
 		if (!debug || e == null)
 			return "event-" + Classes.getSuperClassInfo(c).getName();
 		return Classes.getDebugMessage(getValue(e));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	@Nullable
@@ -177,7 +177,7 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 			changer = ch = (Changer<? super T>) Classes.getSuperClassInfo(c).getChanger();
 		return ch == null ? null : ch.acceptChange(mode);
 	}
-	
+
 	@Override
 	public void change(final Event e, final @Nullable Object[] delta, final ChangeMode mode) {
 		final Changer<? super T> ch = changer;
@@ -185,7 +185,7 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 			throw new UnsupportedOperationException();
 		ChangerUtils.change(ch, getArray(e), delta, mode);
 	}
-	
+
 	@Override
 	public boolean setTime(final int time) {
 		final Class<? extends Event>[] es = getParser().getCurrentEvents();
@@ -206,7 +206,7 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @return true
 	 */
@@ -214,5 +214,5 @@ public class EventValueExpression<T> extends SimpleExpression<T> implements Defa
 	public boolean isDefault() {
 		return true;
 	}
-	
+
 }

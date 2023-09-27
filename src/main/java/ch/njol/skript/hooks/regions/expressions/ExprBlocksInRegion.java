@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions.expressions;
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.bukkit.block.Block;
-import org.bukkit.event.Event;
+import com.github.ultreon.portutils.BlockInstance;
+import net.minecraftforge.eventbus.api.Event;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -50,9 +50,9 @@ import ch.njol.util.coll.iterator.EmptyIterator;
 @Examples({"loop all blocks in the region {arena.%{faction.%player%}%}:",
 		"	clear the loop-block"})
 @Since("2.1")
-public class ExprBlocksInRegion extends SimpleExpression<Block> {
+public class ExprBlocksInRegion extends SimpleExpression<BlockInstance> {
 	static {
-		Skript.registerExpression(ExprBlocksInRegion.class, Block.class, ExpressionType.COMBINED,
+		Skript.registerExpression(ExprBlocksInRegion.class, BlockInstance.class, ExpressionType.COMBINED,
 				"[(all|the)] blocks (in|of) [[the] region[s]] %regions%");
 	}
 	
@@ -68,22 +68,22 @@ public class ExprBlocksInRegion extends SimpleExpression<Block> {
 	
 	@SuppressWarnings("null")
 	@Override
-	protected Block[] get(final Event e) {
-		final Iterator<Block> iter = iterator(e);
-		final ArrayList<Block> r = new ArrayList<>();
+	protected BlockInstance[] get(final Event e) {
+		final Iterator<BlockInstance> iter = iterator(e);
+		final ArrayList<BlockInstance> r = new ArrayList<>();
 		while (iter.hasNext())
 			r.add(iter.next());
-		return r.toArray(new Block[r.size()]);
+		return r.toArray(new BlockInstance[r.size()]);
 	}
 	
 	@Override
 	@NonNull
-	public Iterator<Block> iterator(final Event e) {
+	public Iterator<BlockInstance> iterator(final Event e) {
 		final Region[] rs = regions.getArray(e);
 		if (rs.length == 0)
 			return EmptyIterator.get();
-		return new Iterator<Block>() {
-			private Iterator<Block> current = rs[0].getBlocks();
+		return new Iterator<BlockInstance>() {
+			private Iterator<BlockInstance> current = rs[0].getBlocks();
 			private final Iterator<Region> iter = new ArrayIterator<>(rs, 1);
 			
 			@Override
@@ -98,7 +98,7 @@ public class ExprBlocksInRegion extends SimpleExpression<Block> {
 			
 			@SuppressWarnings("null")
 			@Override
-			public Block next() {
+			public BlockInstance next() {
 				if (!hasNext())
 					throw new NoSuchElementException();
 				return current.next();
@@ -117,8 +117,8 @@ public class ExprBlocksInRegion extends SimpleExpression<Block> {
 	}
 	
 	@Override
-	public Class<? extends Block> getReturnType() {
-		return Block.class;
+	public Class<? extends BlockInstance> getReturnType() {
+		return BlockInstance.class;
 	}
 	
 	@Override

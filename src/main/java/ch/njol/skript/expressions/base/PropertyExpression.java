@@ -18,7 +18,7 @@
  */
 package ch.njol.skript.expressions.base;
 
-import org.bukkit.event.Event;
+import net.minecraftforge.eventbus.api.Event;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Converter;
@@ -33,16 +33,16 @@ import ch.njol.util.Kleenean;
 /**
  * Represents an expression which represents a property of another one. Remember to set the expression with {@link #setExpr(Expression)} in
  * {@link SyntaxElement#init(Expression[], int, Kleenean, ParseResult) init()}.
- * 
+ *
  * @author Peter Güttinger
  * @see SimplePropertyExpression
  * @see #register(Class, Class, String, String)
  */
 public abstract class PropertyExpression<F, T> extends SimpleExpression<T> {
-	
+
 	/**
 	 * Registers an expression as {@link ExpressionType#PROPERTY} with the two default property patterns "property of %types%" and "%types%'[s] property"
-	 * 
+	 *
 	 * @param c
 	 * @param type
 	 * @param property The name of the property
@@ -51,45 +51,45 @@ public abstract class PropertyExpression<F, T> extends SimpleExpression<T> {
 	public static <T> void register(final Class<? extends Expression<T>> c, final Class<T> type, final String property, final String fromType) {
 		Skript.registerExpression(c, type, ExpressionType.PROPERTY, "[the] " + property + " of %" + fromType + "%", "%" + fromType + "%'[s] " + property);
 	}
-	
+
 	@SuppressWarnings("null")
 	private Expression<? extends F> expr;
-	
+
 	/**
 	 * Sets the expression this expression represents a property of. No reference to the expression should be kept.
-	 * 
+	 *
 	 * @param expr
 	 */
 	protected final void setExpr(final Expression<? extends F> expr) {
 		this.expr = expr;
 	}
-	
+
 	public final Expression<? extends F> getExpr() {
 		return expr;
 	}
-	
+
 	@Override
 	protected final T[] get(final Event e) {
 		return get(e, expr.getArray(e));
 	}
-	
+
 	@Override
 	public final T[] getAll(final Event e) {
 		return get(e, expr.getAll(e));
 	}
-	
+
 	/**
 	 * Converts the given source object(s) to the correct type.
 	 * <p>
 	 * Please note that the returned array must neither be null nor contain any null elements!
-	 * 
+	 *
 	 * @param e
 	 * @param source
 	 * @return An array of the converted objects, which may contain less elements than the source array, but must not be null.
 	 * @see Converters#convert(Object[], Class, Converter)
 	 */
 	protected abstract T[] get(Event e, F[] source);
-	
+
 	/**
 	 * @param source
 	 * @param converter must return instances of {@link #getReturnType()}
@@ -106,16 +106,16 @@ public abstract class PropertyExpression<F, T> extends SimpleExpression<T> {
 	public final boolean isSingle() {
 		return expr.isSingle();
 	}
-	
+
 	@Override
 	public final boolean getAnd() {
 		return expr.getAnd();
 	}
-	
+
 	@Override
 	public Expression<? extends T> simplify() {
 		expr = expr.simplify();
 		return this;
 	}
-	
+
 }

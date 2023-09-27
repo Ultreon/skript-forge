@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.command;
@@ -36,15 +36,15 @@ import ch.njol.skript.ScriptLoader;
 import ch.njol.skript.config.SectionNode;
 import org.skriptlang.skript.lang.script.Script;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.minecraft.ChatFormatting;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.Event;
 import org.bukkit.help.GenericCommandHelpTopic;
 import org.bukkit.help.HelpMap;
 import org.bukkit.help.HelpTopic;
@@ -193,22 +193,22 @@ public class ScriptCommand implements TabExecutor {
 	}
 
 	@Override
-	public boolean onCommand(final @Nullable CommandSender sender, final @Nullable Command command, final @Nullable String label, final @Nullable String[] args) {
+	public boolean onCommand(final @Nullable CommandSourceStack sender, final @Nullable Command command, final @Nullable String label, final @Nullable String[] args) {
 		if (sender == null || label == null || args == null)
 			return false;
 		execute(sender, label, StringUtils.join(args, " "));
 		return true;
 	}
 
-	public boolean execute(final CommandSender sender, final String commandLabel, final String rest) {
-		if (sender instanceof Player) {
+	public boolean execute(final CommandSourceStack sender, final String commandLabel, final String rest) {
+		if (sender instanceof ServerPlayer) {
 			if ((executableBy & PLAYERS) == 0) {
-				sender.sendMessage("" + m_executable_by_console);
+				sender.sendSystemMessage("" + m_executable_by_console);
 				return false;
 			}
 		} else {
 			if ((executableBy & CONSOLE) == 0) {
-				sender.sendMessage("" + m_executable_by_players);
+				sender.sendSystemMessage("" + m_executable_by_players);
 				return false;
 			}
 		}
@@ -216,19 +216,19 @@ public class ScriptCommand implements TabExecutor {
 		final ScriptCommandEvent event = new ScriptCommandEvent(ScriptCommand.this, sender, commandLabel, rest);
 
 		if (!permission.isEmpty() && !sender.hasPermission(permission)) {
-			if (sender instanceof Player) {
+			if (sender instanceof ServerPlayer) {
 				List<MessageComponent> components =
 						permissionMessage.getMessageComponents(event);
-				((Player) sender).spigot().sendMessage(BungeeConverter.convert(components));
+				((ServerPlayer) sender).spigot().sendMessage(BungeeConverter.convert(components));
 			} else {
-				sender.sendMessage(permissionMessage.getSingle(event));
+				sender.sendSystemMessage(permissionMessage.getSingle(event));
 			}
 			return false;
 		}
 
 		cooldownCheck : {
-			if (sender instanceof Player && cooldown != null) {
-				Player player = ((Player) sender);
+			if (sender instanceof ServerPlayer && cooldown != null) {
+				ServerPlayer player = ((ServerPlayer) sender);
 				UUID uuid = player.getUniqueId();
 
 				// Cooldown bypass
@@ -244,7 +244,7 @@ public class ScriptCommand implements TabExecutor {
 					} else {
 						String msg = cooldownMessage.getSingle(event);
 						if (msg != null)
-							sender.sendMessage(msg);
+							sender.sendSystemMessage(msg);
 						return false;
 					}
 				}
@@ -253,8 +253,8 @@ public class ScriptCommand implements TabExecutor {
 
 		Runnable runnable = () -> {
 			execute2(event, sender, commandLabel, rest);
-			if (sender instanceof Player && !event.isCooldownCancelled())
-				setLastUsage(((Player) sender).getUniqueId(), event, new Date());
+			if (sender instanceof ServerPlayer && !event.isCooldownCancelled())
+				setLastUsage(((ServerPlayer) sender).getUniqueId(), event, new Date());
 		};
 		if (Bukkit.isPrimaryThread()) {
 			runnable.run();
@@ -266,15 +266,15 @@ public class ScriptCommand implements TabExecutor {
 		return true; // Skript prints its own error message anyway
 	}
 
-	boolean execute2(final ScriptCommandEvent event, final CommandSender sender, final String commandLabel, final String rest) {
+	boolean execute2(final ScriptCommandEvent event, final CommandSourceStack sender, final String commandLabel, final String rest) {
 		final ParseLogHandler log = SkriptLogger.startParseLogHandler();
 		try {
 			final boolean ok = SkriptParser.parseArguments(rest, ScriptCommand.this, event);
 			if (!ok) {
 				final LogEntry e = log.getError();
 				if (e != null)
-					sender.sendMessage(ChatColor.DARK_RED + e.toString());
-				sender.sendMessage(usage);
+					sender.sendSystemMessage(ChatFormatting.DARK_RED + e.toString());
+				sender.sendSystemMessage(usage);
 				log.clear();
 				return false;
 			}
@@ -288,17 +288,17 @@ public class ScriptCommand implements TabExecutor {
 		final long startTrigger = System.nanoTime();
 		
 		if (!trigger.execute(event))
-			sender.sendMessage(Commands.m_internal_error.toString());
+			sender.sendSystemMessage(Commands.m_internal_error.toString());
 		
 		if (Skript.log(Verbosity.VERY_HIGH))
 			Skript.info("# " + name + " took " + 1. * (System.nanoTime() - startTrigger) / 1000000. + " milliseconds");
 		return true;
 	}
 
-	public void sendHelp(final CommandSender sender) {
+	public void sendHelp(final CommandSourceStack sender) {
 		if (!description.isEmpty())
-			sender.sendMessage(description);
-		sender.sendMessage(ChatColor.GOLD + "Usage" + ChatColor.RESET + ": " + usage);
+			sender.sendSystemMessage(description);
+		sender.sendSystemMessage(ChatFormatting.GOLD + "Usage" + ChatFormatting.RESET + ": " + usage);
 	}
 
 	/**
@@ -522,14 +522,14 @@ public class ScriptCommand implements TabExecutor {
 
 	@Nullable
 	@Override
-	public List<String> onTabComplete(@Nullable CommandSender sender, @Nullable Command command, @Nullable String alias, @Nullable String[] args) {
+	public List<String> onTabComplete(@Nullable CommandSourceStack sender, @Nullable Command command, @Nullable String alias, @Nullable String[] args) {
 		assert args != null;
 		int argIndex = args.length - 1;
 		if (argIndex >= arguments.size())
 			return Collections.emptyList(); // Too many arguments, nothing to complete
 		Argument<?> arg = arguments.get(argIndex);
 		Class<?> argType = arg.getType();
-		if (argType.equals(Player.class) || argType.equals(OfflinePlayer.class))
+		if (argType.equals(ServerPlayer.class) || argType.equals(OfflinePlayer.class))
 			return null; // Default completion
 		
 		return Collections.emptyList(); // No tab completion here!

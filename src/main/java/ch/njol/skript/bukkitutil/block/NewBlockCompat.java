@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.bukkitutil.block;
@@ -24,20 +24,23 @@ import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.aliases.MatchQuality;
 import ch.njol.skript.variables.Variables;
 import ch.njol.yggdrasil.Fields;
+import com.github.ultreon.portutils.BlockInstance;
+import com.github.ultreon.portutils.Location;
+import com.github.ultreon.portutils.Material;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Tag;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Bed;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -55,12 +58,12 @@ public class NewBlockCompat implements BlockCompat {
 			Variables.yggdrasil.registerSingleClass(NewBlockValues.class, "NewBlockValues");
 		}
 
-		Material type;
-		BlockData data;
+		Block type;
+		BlockState data;
 		boolean isDefault;
 		
-		public NewBlockValues(Material type, BlockData data, boolean isDefault) {
-			if (type != data.getMaterial())
+		public NewBlockValues(Block type, BlockState data, boolean isDefault) {
+			if (type != data.getBlock())
 				throw new IllegalArgumentException("'type' does not match material of 'data'");
 			this.type = type;
 			this.data = data;
@@ -79,10 +82,9 @@ public class NewBlockCompat implements BlockCompat {
 
 		@Override
 		public boolean equals(@Nullable Object other) {
-			if (!(other instanceof NewBlockValues))
+			if (!(other instanceof NewBlockValues n))
 				return false;
-			NewBlockValues n = (NewBlockValues) other;
-			return (data.matches(n.data) || n.data.matches(data)) && type.equals(n.type);
+			return (data.getValues().equals(n.data.getValues()) || n.data.getValues().equals(data.getValues())) && type.equals(n.type);
 		}
 
 		@SuppressWarnings("null")
@@ -109,7 +111,7 @@ public class NewBlockCompat implements BlockCompat {
 			if (type == n.type) {
 				if (data.equals(n.data)) { // Check for exact item match
 					return MatchQuality.EXACT;
-				} else if (data.matches(n.data)) { // What about explicitly defined states only?
+				} else if (data.getValues().equals(n.data.getValues())) { // What about explicitly defined states only?
 					return MatchQuality.SAME_ITEM;
 				} else { // Just same material and different block states
 					return MatchQuality.SAME_MATERIAL;
@@ -122,7 +124,7 @@ public class NewBlockCompat implements BlockCompat {
 		@Override
 		public Fields serialize() {
 			Fields fields = new Fields();
-			fields.putObject("data", data.getAsString());
+			fields.putObject("data", data.getValues().toString());
 			fields.putPrimitive("isDefault", isDefault);
 			return fields;
 		}
@@ -150,14 +152,14 @@ public class NewBlockCompat implements BlockCompat {
 		
 		private boolean typesLoaded = false;
 		
-		private static final BlockFace[] CARDINAL_FACES =
-			new BlockFace[] {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+		private static final Direction[] CARDINAL_FACES =
+			new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 		
 		@SuppressWarnings("null") // Late initialization with loadTypes() to avoid circular dependencies
 		public NewBlockSetter() {}
 
 		@Override
-		public void setBlock(Block block, Material type, @Nullable BlockValues values, int flags) {
+		public void setBlock(BlockInstance block, Material type, @Nullable BlockValues values, int flags) {
 			if (!typesLoaded)
 				loadTypes();
 			
@@ -180,7 +182,7 @@ public class NewBlockCompat implements BlockCompat {
 			if (rotate) {
 				if (floorTorch.isOfType(type) || (rotateFixType && wallTorch.isOfType(type))) {
 					// If floor torch cannot be placed, try a wall torch
-					Block under = block.getRelative(0, -1, 0);
+					BlockInstance under = block.getRelative(0, -1, 0);
 					boolean canPlace = true;
 					if (!under.getType().isOccluding()) { // Usually cannot be placed, but there are exceptions
 						// TODO check for stairs and slabs, currently complicated since there is no 'any' alias
@@ -209,7 +211,7 @@ public class NewBlockCompat implements BlockCompat {
 					else
 						data = (Directional) Bukkit.createBlockData(type);
 					
-					Block relative = block.getRelative(data.getFacing());
+					BlockInstance relative = block.getRelative(data.getFacing());
 					if ((!relative.getType().isOccluding() && !specialTorchSides.isOfType(relative)) || rotateForce) {
 						// Attempt to figure out a better rotation
 						BlockFace face = findWallTorchSide(block);
@@ -246,7 +248,7 @@ public class NewBlockCompat implements BlockCompat {
 					}
 					
 					// Place the other part
-					Block other = block.getRelative(facing);
+					BlockInstance other = block.getRelative(facing);
 					other.setType(type, false);
 					
 					data.setPart(otherPart);
@@ -277,7 +279,7 @@ public class NewBlockCompat implements BlockCompat {
 					}
 					
 					// Place the other block
-					Block other = block.getRelative(facing);
+					BlockInstance other = block.getRelative(facing);
 					other.setType(type, false);
 					
 					data.setHalf(otherHalf);
@@ -306,19 +308,19 @@ public class NewBlockCompat implements BlockCompat {
 		}
 
 		@Nullable
-		private BlockFace findWallTorchSide(Block block) {
-			for (BlockFace face : CARDINAL_FACES) {
-				Block relative = block.getRelative(face);
-				if (relative.getType().isOccluding() || specialTorchSides.isOfType(relative))
-					return face.getOppositeFace(); // Torch can be rotated towards from this face
+		private Direction findWallTorchSide(BlockInstance block) {
+			for (Direction face : CARDINAL_FACES) {
+				BlockInstance relative = block.getRelative(face);
+				if (relative.getState().canOcclude() || specialTorchSides.isOfType(relative))
+					return face.getOpposite(); // Torch can be rotated towards from this face
 			}
 			
 			return null; // Can't place torch here legally
 		}
 		
 		@Override
-		public void sendBlockChange(Player player, Location location, Material type, @Nullable BlockValues values) {
-			BlockData blockData = values != null ? ((NewBlockValues) values).data : type.createBlockData();
+		public void sendBlockChange(ServerPlayer player, Location location, Block type, @Nullable BlockValues values) {
+			BlockState blockData = values != null ? ((NewBlockValues) values).data : type.defaultBlockState();
 			player.sendBlockChange(location, blockData);
 		}
 		
@@ -360,7 +362,7 @@ public class NewBlockCompat implements BlockCompat {
 
 	@Override
 	@Nullable
-	public BlockValues createBlockValues(Material type, Map<String, String> states, @Nullable ItemStack item, int itemFlags) {
+	public BlockValues createBlockValues(Block type, Map<String, String> states, @Nullable ItemStack item, int itemFlags) {
 		// Ignore item; on 1.13+ block data never applies to items
 		if (states.isEmpty()) {
 			if (type.isBlock()) { // Still need default block values

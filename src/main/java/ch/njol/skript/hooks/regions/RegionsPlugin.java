@@ -1,19 +1,19 @@
 /**
  *   This file is part of Skript.
- *
+ * <p>
  *  Skript is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *
+ * <p>
  *  Skript is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ * <p>
  *  You should have received a copy of the GNU General Public License
  *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * Copyright Peter Güttinger, SkriptLang team and contributors
  */
 package ch.njol.skript.hooks.regions;
@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -75,9 +75,9 @@ public abstract class RegionsPlugin<P extends Plugin> extends Hook<P> {
 		return true;
 	}
 	
-	public abstract boolean canBuild_i(Player p, Location l);
+	public abstract boolean canBuild_i(ServerPlayer p, Location l);
 	
-	public static boolean canBuild(final Player p, final Location l) {
+	public static boolean canBuild(final ServerPlayer p, final Location l) {
 		for (final RegionsPlugin<?> pl : plugins) {
 			if (!pl.canBuild_i(p, l))
 				return false;
@@ -104,10 +104,10 @@ public abstract class RegionsPlugin<P extends Plugin> extends Hook<P> {
 	}
 	
 	@Nullable
-	public abstract Region getRegion_i(World world, String name);
+	public abstract Region getRegion_i(ServerLevel world, String name);
 	
 	@Nullable
-	public static Region getRegion(final World world, final String name) {
+	public static Region getRegion(final ServerLevel world, final String name) {
 		for (final RegionsPlugin<?> pl : plugins) {
 			return pl.getRegion_i(world, name);
 		}
